@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<Window size="1000,1000" caption="0,0,0,50" >
+  <Font name="微软雅黑" size="14" bold="false"/>
+  <Font name="微软雅黑" size="15" bold="false"/>
+  <VerticalLayout bkcolor="#FF1a1c1e" bordersize="1" bordercolor="FF000000"  >
+    <HorizontalLayout name="header" height="40" bkcolor="#FF333537" bordersize="1" bordercolor="#FF505a5a" >
+      <HorizontalLayout>
+        <Control width="10"/>
+        <Label name="title"  textpadding="18,10,0,0" width="0" text="连连看"  textcolor="#dce6fa" font="1" />
+      </HorizontalLayout>
+      <Button name="closeWnd" tooltip="关闭"  height="40" width="40" padding="0,0,0,0" normalimage="file='CommonRes/close.png' source='0,0,40,40'" hotimage="file='CommonRes/close_over.png' source='0,0,40,40'" pushedimage="file='CommonRes/close_pressed.png' source='0,0,40,40'"/>
+    </HorizontalLayout>
+    <Control height="20"/>
+    <HorizontalLayout>
+      <Control width="20"/>
+      <VerticalLayout name="hpage" bkcolor="#ff123456"/>
+      <Control width="20"/>
+    </HorizontalLayout>
+    <Control height="20"/>
+  </VerticalLayout>
+</Window>
