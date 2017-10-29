@@ -1,18 +1,18 @@
 #pragma once
 //define base datastruct this file
 //#include "windows.h"
-#include "LinkGameBlock.h"
+//#include "LinkGameBlock.h"
 
 
 
 
 
-typedef CLinkGameBlock *				pLGBlock;
+//typedef CLinkGameBlock *				pLGBlock;
 
 
 class INotify
 {
-	virtual void OneClickProcessCallBack(pLGBlock * pBlock)				=	0;
+	//virtual void OneClickProcessCallBack(pLGBlock * pBlock)				=	0;
 };
 
 

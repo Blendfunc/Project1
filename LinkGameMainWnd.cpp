@@ -5,6 +5,8 @@ CLLKMainWnd::CLLKMainWnd()
 {
 	m_Page = NULL;
 	m_pCtrl = NULL;
+	m_PageAni = NULL;
+	m_nTotalBlock = 0;
 }
 
 CLLKMainWnd::~CLLKMainWnd()
@@ -14,6 +16,7 @@ CLLKMainWnd::~CLLKMainWnd()
 void CLLKMainWnd::InitWindow()
 {
 	m_Page = (CVerticalLayoutUI *)m_PaintManager.FindControl(_T("hpage"));
+	m_PageAni = (CVerticalLayoutUI *)m_PaintManager.FindControl(_T("hAniPage"));
 	InitGameData(LINKGAMEGAMEMODE::easy);
 	InitGameDisplay(m_Page);
 }
@@ -84,7 +87,7 @@ HRESULT CLLKMainWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 							pBlock1 = (BlockInfomationST *)(*iter)->GetTag();
 						}
 					}
-					
+
 					if (pBlock0 && pBlock1 && pBlock0->nIndex == pBlock1->nIndex && pCtrl0 && pCtrl1)
 					{
 						LG_Path path;
@@ -95,8 +98,38 @@ HRESULT CLLKMainWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 							pCtrl1->SetVisible(false);*/
 							pCtrl0->SetBkImage(_T(""));
 							pCtrl1->SetBkImage(_T(""));
+							m_nTotalBlock += 2;
 							pBlock0->isExist = false;
 							pBlock1->isExist = false;
+							system("cls");
+							//test code easymode
+							for (int i = 0; i < EASYXLENGTH; i++)
+							{
+								for (int j = 0; j < EASYYLENGTH; j++)
+								{
+									printf("%d  ", (m_LogicalManager.m_easyMode)[j][i].nIndex);
+								}
+								printf("\n");
+							}
+							if (m_nTotalBlock == EASYXLENGTH * EASYYLENGTH)
+							{
+								m_Page->SetVisible(false);
+								m_PageAni->SetVisible(true);
+								CGifAnimUI * pAni = new CGifAnimUI;
+								m_PageAni->Add(pAni);
+								std::string strfile;
+								char chpath[MAX_PATH];
+								GetModuleFileName(NULL, chpath, sizeof(chpath));
+								USES_CONVERSION;
+								(_tcsrchr(chpath, _T('\\')))[1] = 0;//删除文件名，只获得路径 字串
+								strfile = chpath;
+								std::string name = "testgif.gif";
+								std::string strFilePath = strfile + name;
+								pAni->SetBkImage(A2T((LPSTR)strFilePath.data()));
+								pAni->DoInit();
+							}
+							//
+
 						}
 						else if (error == LG_ERR_NOPATHCONNECT)
 						{
@@ -108,12 +141,12 @@ HRESULT CLLKMainWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 	}
-return __super::HandleMessage(uMsg, wParam, lParam);
+	return __super::HandleMessage(uMsg, wParam, lParam);
 }
 
 void CLLKMainWnd::CreateBlock(CHorizontalLayoutUI * ph)
 {
-	if(ph)
+	if (ph)
 	{
 		for (int i = 0; i < 10; i++)
 		{
@@ -130,15 +163,51 @@ void CLLKMainWnd::InitGameData(LINKGAMEGAMEMODE mode)
 {
 	if (mode == LINKGAMEGAMEMODE::easy)
 	{
-		int matrix [EASYXLENGTH][EASYYLENGTH];
-		m_GenerateManager.Methods2(EASYXLENGTH, EASYYLENGTH, matrix , 10);
+		int matrix[EASYXLENGTH][EASYYLENGTH];
+		//m_GenerateManager.Methods2(EASYXLENGTH, EASYYLENGTH, matrix , 10);
+		CLinkGameGenerate::RangeST range;
+		range.n = 0;
+		range.m = 10;
+		//初始化数组，并为传参做准备
+		for (int i = 0; i < EASYYLENGTH; i++)
+		{
+			for (int j = 0; j < EASYXLENGTH; j++)
+			{
+				matrix[j][i] = -1;
+			}
+		}
+		for (int i = 0; i < EASYXLENGTH; i++)
+		{
+			if (i >= EASYYLENGTH)
+			{
+				int * p = &(matrix[i][0]);
+				matrix[(i + 1) / EASYYLENGTH][((i + 1) % EASYYLENGTH) - 1] = (int)p;
+			}
+			else
+			{
+				int * p = &(matrix[i][0]);
+				matrix[0][i] = (int)p;
+			}
+		}
+		//
+		m_GenerateManager.Methods3(EASYXLENGTH, EASYYLENGTH, matrix, range);
+		//test code
+		for (int i = 0; i < EASYXLENGTH; i++)
+		{
+			for (int j = 0; j < EASYYLENGTH; j++)
+			{
+				printf("%d  ", matrix[j][i]);
+			}
+			printf("\n");
+		}
+		//
 		m_LogicalManager.SetGameMode(LINKGAMEGAMEMODE::easy);
 		for (int i = 0; i < EASYYLENGTH; i++)
 		{
 			for (int j = 0; j < EASYXLENGTH; j++)
 			{
 				BlockInfomationST block;
-				memset(&block , 0 , sizeof(BlockInfomationST));
+				memset(&block, 0, sizeof(BlockInfomationST));
 				//这里先设置每个方块的id，对应的图片，坐标
 				block.nIndex = matrix[j][i];
 				block.tlcX = j;
@@ -182,7 +251,7 @@ void CLLKMainWnd::InitGameDisplay(CVerticalLayoutUI * pVer)
 				m_setBlock.insert(pCtrl);
 				BlockInfomationST * p = NULL;
 				BlockInfomationST ** _p = &p;
-				m_LogicalManager.GetBlockInformation(_p , l , k);
+				m_LogicalManager.GetBlockInformation(_p, l, k);
 				if (p)
 				{
 					m_vecReleaseBuffer.push_back(p);
@@ -216,62 +285,63 @@ void CLLKMainWnd::GetBlockInformation(BlockInfomationST * pBlock)
 		strfile = chpath;
 		std::string strName;
 		std::string strFileName;
+		std::string * pStr = new std::string;
 		switch (nIndex)
 		{
-		case 0: 
+		case 0:
 			strName = "block0.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(* pStr).data());
 			break;
 		case 1:
 			strName = "block1.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 2: 
+		case 2:
 			strName = "block2.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 3: 
+		case 3:
 			strName = "block3.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 4: 
+		case 4:
 			strName = "block4.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data()); 
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 5: 
+		case 5:
 			strName = "block5.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 6: 
+		case 6:
 			strName = "block6.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 7: 
+		case 7:
 			strName = "block7.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 8: 
+		case 8:
 			strName = "block8.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 9: 
+		case 9:
 			strName = "block9.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
-		case 10: 
+		case 10:
 			strName = "block10.bmp";
-			strFileName = strfile + strName;
-			pBlock->lpszNormalImg = A2T((LPSTR)strFileName.data());
+			*pStr = strfile + strName;
+			pBlock->lpszNormalImg = A2T((LPSTR)(*pStr).data());
 			break;
 		}
 	}
@@ -281,7 +351,7 @@ void CLLKMainWnd::DrawBorder()
 {
 	/*m_pCtrl->SetAttribute(_T("bordersize"), _T("1"));
 	m_pCtrl->SetAttribute(_T("bordercolor"), _T("#ff6c717a"));
-}
-pCtrl->SetAttribute(_T("bordercolor"), _T("#ff2d87ff"));
-pCtrl->SetAttribute(_T("bordersize"), _T("1"));*/
+	}
+	pCtrl->SetAttribute(_T("bordercolor"), _T("#ff2d87ff"));
+	pCtrl->SetAttribute(_T("bordersize"), _T("1"));*/
 }

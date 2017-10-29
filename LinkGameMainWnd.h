@@ -20,6 +20,7 @@ protected:
 	HRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	CVerticalLayoutUI * m_Page;
+	CVerticalLayoutUI * m_PageAni;
 	CLogicalProcess m_LogicalManager;//main logical manager
 	CLinkGameGenerate m_GenerateManager;//main generTE manager
 	std::set<CControlUI *> m_setBlock;
@@ -31,9 +32,14 @@ private:
 
 	void GetBlockInformation(BlockInfomationST * pBlock);
 	CControlUI * m_pCtrl;
-
 	//modi at 20170910 zy
 	void DrawBorder();
 	std::set<CControlUI *>m_setCurrentBlock;
+	//test code
+	int m_nTotalBlock;
+
+};
+class CGameBlockUI : public CControlUI
+{
 
 };

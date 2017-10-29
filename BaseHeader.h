@@ -1,7 +1,11 @@
 #pragma once
 
-
-
+#define TINYNUM 0.000001
+typedef struct tagLGRANGE
+{
+	float left;
+	float right;
+}LGRANGE;
 enum LGErrorStates
 {
 	LG_ERR_ILLEGALiMG = 0,/*!< 非法图像 */
@@ -13,6 +17,11 @@ enum LGErrorStates
 	LG_ERR_ILLEGALPOINT,/*!< 坐标非法 */
 	LG_ERR_SQUARESNUMILLEGALiMG,/*!< 棋盘方块个数不正确 */
 	LG_ERR_NULLPOINTER,/*!< 空指针 */
+	LG_ERR_VALUETOOSMALL,/*!< 值过小 */
+	LG_ERR_NOINTERSECT,/*!< 没有交点 */
+	LG_ERR_HAVEINTERSECT,/*!< 有交点 */
+	LG_ERR_ERRID,/*!< 错误id */
+	LG_ERR_PARAM,/*!< 参数错误 */
 	LG_ERR_OTHER/*!< 其他 */
 };
 

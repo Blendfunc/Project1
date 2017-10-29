@@ -74,7 +74,7 @@
     <LibraryPath>D:\duilib-master\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>D:\duilib-master\Lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\duilib-master\Lib;C:\Users\Administrator\Documents\Tencent Files\1457321461\FileRecv\MobileFile\Project1\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -83,7 +83,7 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>DuiLib_d.lib</AdditionalDependencies>
+      <AdditionalDependencies>DuiLib_d.lib;User32.lib;Gdi32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,8 +131,6 @@
     <ClInclude Include="BaseHeader.h" />
     <ClInclude Include="LGImgCommon.h" />
     <ClInclude Include="LG_NetConnect.h" />
-    <ClInclude Include="LinkGameBlock.cpp" />
-    <ClInclude Include="LinkGameBlock.h" />
     <ClInclude Include="LinkGameCommonBusinessData.h" />
     <ClInclude Include="LinkGameMainWnd.h" />
     <ClInclude Include="LinkGamgeMainWnd.h" />

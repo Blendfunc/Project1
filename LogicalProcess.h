@@ -2,7 +2,7 @@
 /*****************************************************************************
 *                                                  *
 *  Copyright (C) 2017 zhaozhiyuan  1457321461@qq.com                         *
-                                   *
+*
 *                                                                            *
 *  @file     LinkGamgeMainWnd.h                                                       *
 *  @brief    对文件的简述                                                      *
@@ -18,7 +18,7 @@
 *  Remark         : Description                                              *
 *----------------------------------------------------------------------------*
 *  Change History :                                                          *
-*  <Date>     | <Version> | <Author>      
+*  <Date>     | <Version> | <Author>
 | <Description>                   *
 *----------------------------------------------------------------------------*
 *  2017/08/30 | 1.0.0.1   | zhaozhiyuan      | Create file                     *
@@ -36,6 +36,9 @@
 #include "time.h"
 //#include "afx.h"
 #include <vector>
+#include <map>
+#include <utility>  
+#include <assert.h>
 #define EASYXLENGTH 10
 #define EASYYLENGTH 10
 #define HARDXLENGTH 20
@@ -151,16 +154,16 @@ public:
 	*
 	*/
 	LGErrorStates SetData(int x, int y, int nIndex, void * pUserData);//only test
-	/**
-	* @brief SetDataEx
-	* @param int        x @
-	* @param int        y @
-	* @param BlockInfomationST*        pInfo @
-	* @return LGErrorStates，xy为行数和列数，pInfo为方块具体信息，包含状态图片，方块的大小
-	*        -<em>LGErrorStates</em> fail
-	*
-	*/
-	LGErrorStates SetDataEx(int x, int y , BlockInfomationST * pInfo);
+																	  /**
+																	  * @brief SetDataEx
+																	  * @param int        x @
+																	  * @param int        y @
+																	  * @param BlockInfomationST*        pInfo @
+																	  * @return LGErrorStates，xy为行数和列数，pInfo为方块具体信息，包含状态图片，方块的大小
+																	  *        -<em>LGErrorStates</em> fail
+																	  *
+																	  */
+	LGErrorStates SetDataEx(int x, int y, BlockInfomationST * pInfo);
 	/**
 	* @brief GetConnectInfo
 	* @param LG_Path        path @
@@ -179,12 +182,12 @@ public:
 	LINKGAMEGAMEMODE GetGameMode();
 
 	bool GetBlockInformation(BlockInfomationST ** pInfo, int x, int y);//memory release outside must
-protected:
+public:
 	BlockInfomationST m_easyMode[EASYXLENGTH][EASYYLENGTH];
 	BlockInfomationST m_hardMode[HARDXLENGTH][HARDYLENGTH];
 	LINKGAMEGAMEMODE m_GameMode;
 protected:
-	
+
 	bool IsBlockExist(int x, int y);
 
 
@@ -198,9 +201,12 @@ private:
 	void SetPointInformation(int x, int y, bool isExist);//设置点是否存在
 	bool IsHaveobstacle(int x1, int y1, int x2, int y2, Orientation ori);//判断两点之间是否在一条横或竖线上
 	void ClearPoint(int x1, int y1, int x2, int y2);
+	//new add at 20170914 by zy
+	void SetPointIndex(int x , int y , int nIndex);
 };
 class CLinkGameGenerate
 {
+public:
 	typedef struct tagRANGE
 	{
 		int n;
@@ -218,12 +224,15 @@ public:
 	//范围 n~m;设最初的随机数为M
 	//公式为：[M%(m-n+1)]+n
 	/*********************************/
-	LGErrorStates Methods1(int nx , int ny);//
-	LGErrorStates Methods2(int nx, int ny , /*OUT*/void * p , int nTypes);//1.先随机生成一半的元素2.复制3.随机打乱provide by shangji
-	LGErrorStates Methods3(int nx, int ny, /*OUT*/void * p, RangeST & _range);//1.先随机生成一半的元素2.复制3.随机打乱
+	LGErrorStates Methods1(int nx, int ny);//
+	LGErrorStates Methods2(int nx, int ny, /*OUT*/void * p, int nTypes);//1.先随机生成一半的元素2.复制3.随机打乱provide by shangji
 
-	LGErrorStates RandomDisturb1(void * p , int nx, int ny);//洗牌算法实现
-	//LGErrorStates GetMethods1Result(/*type rlt*/);
+																		//@note 注意这里传入的二维数组默认已经存储了列指针并且其余各项为-1
+	LGErrorStates Methods3(int nx, int ny, /*OUT*/void * p, RangeST & _range);//1.先随机生成一半的元素2.复制3.随机打乱
+																			  //@note end
+
+	LGErrorStates RandomDisturb1(void * p, int nx, int ny);//洗牌算法实现
+														   //LGErrorStates GetMethods1Result(/*type rlt*/);
 private:
 	int GenerateRandNum(int * pInt, bool & b, RangeST & range);
 

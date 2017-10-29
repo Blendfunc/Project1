@@ -51,7 +51,7 @@ LGErrorStates CLogicalProcess::GetConnectInfo(LG_Path & path, int x1, int y1, in
 		path.nPoint = 0;
 		return LGErrorStates::LG_ERR_ONEPATHCONNECT;
 	}
-	if (IsTwoLoadConnect(x1, y1, x2, y2 , path) == true)
+	if (IsTwoLoadConnect(x1, y1, x2, y2, path) == true)
 	{
 		ClearPoint(x1, y1, x2, y2);
 		path.nPoint = 1;
@@ -279,6 +279,7 @@ bool CLogicalProcess::IsThreeLoadConnect(int x1, int y1, int x2, int y2, LG_Path
 				std::vector<LG_Path> vecPath;
 				if (IsTwoLoadConnect(i, y2, x1, y1, &vecPath) == true)
 				{
+					int testn = 0;
 					for (auto iter = vecPath.begin(); iter != vecPath.end(); iter++)
 					{
 						if ((*iter).pointBegin.y != y2 && IsOneLoadConnect(i, y2, x2, y2) == true)
@@ -295,6 +296,7 @@ bool CLogicalProcess::IsThreeLoadConnect(int x1, int y1, int x2, int y2, LG_Path
 							path.pointEnd.pNext = 0;
 							return true;
 						}
+						testn++;
 					}
 				}
 				//if (IsTwoLoadConnect(i, y2, x1, y1, _path) == true && _path.pointBegin.y != y2 && IsOneLoadConnect(i , y2 , x2 , y2) == true)
@@ -325,6 +327,7 @@ bool CLogicalProcess::IsThreeLoadConnect(int x1, int y1, int x2, int y2, LG_Path
 				std::vector<LG_Path> vecPath;
 				if (IsTwoLoadConnect(x2, i, x1, y1, &vecPath) == true)
 				{
+					int testn = 0;
 					for (auto iter = vecPath.begin(); iter != vecPath.end(); iter++)
 					{
 						if (iter->pointBegin.x != x2 && IsOneLoadConnect(x2, i, x2, y2) == true)
@@ -341,6 +344,7 @@ bool CLogicalProcess::IsThreeLoadConnect(int x1, int y1, int x2, int y2, LG_Path
 							path.pointEnd.pNext = 0;
 							return true;
 						}
+						testn++;
 					}
 				}
 				SetPointInformation(x2, i, false);
@@ -371,7 +375,7 @@ bool CLogicalProcess::IsHaveobstacle(int x1, int y1, int x2, int y2, Orientation
 	if (ori == horizontal && y1 == y2 && x1 != x2)
 	{
 		//遍历查找
-		for (int i = min(x1, x2) + 1; i < max(x1, x2) - 1; i++)
+		for (int i = min(x1, x2) + 1; i < max(x1, x2); i++)
 		{
 			if (IsBlockExist(i, y2) == true)
 			{
@@ -396,13 +400,34 @@ void CLogicalProcess::ClearPoint(int x1, int y1, int x2, int y2)
 {
 	SetPointInformation(x1, y1, false);
 	SetPointInformation(x2, y2, false);
+	SetPointIndex(x1, y1, -1);
+	SetPointIndex(x2, y2, -1);
+}
+void CLogicalProcess::SetPointIndex(int x, int y, int nIndex)
+{
+	if (GetGameMode() == LINKGAMEGAMEMODE::easy)
+	{
+		//new add at 20170914 by zy
+		m_easyMode[x][y].nIndex = nIndex;
+		//
+	}
+	else if (GetGameMode() == LINKGAMEGAMEMODE::hard)
+	{
+		//new add at 20170914 by zy
+		m_hardMode[x][y].nIndex = nIndex;
+		//
+	}
+	else
+	{
+		;
+	}
 }
 int ToRandNum(int iStart, int iEnd)//provide by shangji
 {
 	srand((unsigned)time(NULL));
 	return (rand() % (iEnd - iStart + 1)) + iStart;
 }
-LGErrorStates CLinkGameGenerate::Methods2(int nx, int ny , void * p , int nTypes)
+LGErrorStates CLinkGameGenerate::Methods2(int nx, int ny, void * p, int nTypes)
 {
 	if (nx*ny % 2 != 0)
 		return LG_ERR_SQUARESNUMILLEGALiMG;
@@ -450,6 +475,10 @@ LGErrorStates CLinkGameGenerate::Methods3(int nx, int ny, void * p, RangeST & _r
 	{
 		return LG_ERR_NULLPOINTER;
 	}
+	if (_range.n < 0)
+	{
+		return LG_ERR_VALUETOOSMALL;
+	}
 	int MAXX = nx;
 	int MAXY = ny;
 	int** matrix = (int**)p;
@@ -458,7 +487,7 @@ LGErrorStates CLinkGameGenerate::Methods3(int nx, int ny, void * p, RangeST & _r
 	range.m = _range.m;
 	int nTime = time(0);//精度丢失
 	bool b = false;
-	int * database = (int *)malloc(((MAXX * MAXY) /2) * sizeof(int));
+	int * database = (int *)malloc(((MAXX * MAXY) / 2) * sizeof(int));
 	for (int i = 0; i < (MAXX * MAXY) / 2; i++)
 	{
 		int n = GenerateRandNum(&nTime, b, range);
@@ -471,18 +500,89 @@ LGErrorStates CLinkGameGenerate::Methods3(int nx, int ny, void * p, RangeST & _r
 	}
 	//int matrix[MAXX][MAXY];
 	int index = 0;
+	std::map<int, std::pair<int *, std::pair<int *, int> > > _map;//存储二维数组的自身指针,列指针以及对应的值
+	int nPointer = 0;
+	bool bIsBreak = false;
+	for (int i = 0; i < nx; i++)
+	{
+		for (int j = 0; j < ny; j++)
+		{
+			if (matrix[i][j] != -1)
+			{
+				std::pair<int *, int> _pair;
+				int _temp = matrix[i][j];
+				_pair.first = (int *)_temp;
+				_pair.second = 0;
+				std::pair<int *, std::pair<int *, int> > __pair;
+				__pair.first = &(matrix[i][j]);
+				__pair.second = _pair;
+				_map.insert(std::pair<int, std::pair<int *, std::pair<int *, int> > >(nPointer, __pair));
+				nPointer++;
+			}
+			else if (matrix[i][j] == -1)
+			{
+				bIsBreak = true;
+				break;//跳出循环
+			}
+		}
+		if (bIsBreak == true)
+		{
+			break;
+		}
+	}
+	assert(_map.size());
+	if (_map.size() != nx)
+	{
+		assert(0);
+	}
+	std::map<int *, int> mapElse;
 	for (int i = 0; i < MAXY / 2; i++)
 	{
 		for (int j = 0; j < MAXX; j++)
 		{
-			matrix[j][i] = database[index];
-			// matrix[MAXX - 1 - j][MAXY - 1 - i] = database[((MAXX * MAXY) / 2) - 1 - index] ; one way
-			matrix[MAXX - 1 - j][MAXY - 1 - i] = database[index];//another way
+			//判断当前的位置相对于列排列时的位置
+			if ((j * ny) + i > MAXX - 1)
+			{
+				matrix[j][i] = database[index];
+				// matrix[MAXX - 1 - j][MAXY - 1 - i] = database[((MAXX * MAXY) / 2) - 1 - index] ; one way
+				int _j = MAXX - 1 - j;
+				int _i = MAXY - 1 - i;
+				int _index = (_j * ny) + _i;
+				if (_index > MAXX - 1)
+				{
+					matrix[_j][_i] = database[index];//another way
+				}
+				else
+				{
+					if (_map.count(_index))
+					{
+						if (_map[_index].first == &(matrix[_j][_i]))
+						{
+							_map[_index].second.second = database[index];
+						}
+						else
+						{
+							assert(0);
+						}
+
+					}
+					else
+					{
+						assert(0);
+					}
+				}
+
+			}
+			else
+			{
+				_map[(j * ny) + i].second.second = database[index];
+				int _j = MAXX - 1 - j;
+				int _i = MAXY - 1 - i;
+				mapElse.insert(std::pair<int *, int>(&(matrix[_j][_i]), database[index]));
+			}
 			index++;
 		}
-
 	}
-	RandomDisturb1(p);
 	for (int i = 0; i < MAXY; i++)
 	{
 		for (int j = 0; j < MAXX; j++)
@@ -491,14 +591,45 @@ LGErrorStates CLinkGameGenerate::Methods3(int nx, int ny, void * p, RangeST & _r
 		}
 		printf("\n");
 	}
+	//恢复数组
+	for (auto iter = _map.begin(); iter != _map.end(); iter++)
+	{
+		*((iter->second).first) = (iter->second).second.second;
+	}
+	for (auto _iter = mapElse.begin(); _iter != mapElse.end(); _iter++)
+	{
+		*((*_iter).first) = _iter->second;
+	}
+	//
+	RandomDisturb1(p, nx, ny);
+	/*for (int i = 0; i < MAXY; i++)
+	{
+		for (int j = 0; j < MAXX; j++)
+		{
+			printf("%d  ", matrix[j][i]);
+		}
+		printf("\n");
+	}*/
 	free(database);
 	return LG_ERR_OTHER;
 }
 
-LGErrorStates CLinkGameGenerate::RandomDisturb1(void * p , int nx , int ny)
+LGErrorStates CLinkGameGenerate::RandomDisturb1(void * p, int nx, int ny)
 {
+	/******************************************************************/
+	//算法摘自http://blog.csdn.net/cxllyg/article/details/7986352
+	/******************************************************************/
 	int* matrix = (int*)p;
-	
+	int index, tmp, i;
+	int n = nx * ny;
+	for (i = n - 1; i>0; i--)
+	{
+		index = rand() % i;
+		tmp = matrix[i];
+		matrix[i] = matrix[index];
+		matrix[index] = tmp;
+	}
+	return LG_ERR_OTHER;
 }
 
 int CLinkGameGenerate::GenerateRandNum(int * pInt, bool & b, RangeST & range)
