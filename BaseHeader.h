@@ -25,7 +25,6 @@ enum LGErrorStates
 	LG_ERR_OTHER/*!< 其他 */
 };
 
-#define LD_EXT_CLASS __declspec(dllexport)
 /**
 * @brief LG_Point，描述一条路径
 */

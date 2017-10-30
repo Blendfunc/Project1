@@ -3,6 +3,11 @@
 * @brief 公共图像控制 \n
 * 类的详细概述
 */
+#ifdef _LG_IMG_COMMON_
+#define LD_EXT_CLASS __declspec(dllexport)
+#else
+#define LD_EXT_CLASS __declspec(dllimport)
+#endif
 #include "windows.h"
 #include "BaseHeader.h"
 #include <map>
@@ -238,6 +243,10 @@ public:
 
 	LGErrorStates LGOilPaintings(LGBitMapId imgInId, LGBitMapId & imgOutId);//油画效果
 
+
+	LGErrorStates LGASCIIPaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//ASCII
+
+
 	//
 
 	//geometric transformation几何变换
@@ -280,8 +289,8 @@ private:
 
 
 };
-芒德球
-//一些计算几何s的算法
+
+//一些计算几何的算法
 class LD_EXT_CLASS LGGeometryControl final
 {
 public:
@@ -289,6 +298,12 @@ public:
 	LGErrorStates GetLineIntersect(LGLine & line1, LGLine & line2, LGPoint & point);
 	bool IsPtInRect(LGRECT & rect, LGPoint & point);
 	LGErrorStates GetOrthogonalLineIntersect(LGLine & line1, LGLine & line2, LGPoint & point);
+	//分形图形
+
+
+
+	//
+
 private:
 	bool CollatingData(LGPoint & point1, LGPoint & point2, LGPoint & point3, LGPoint & point4, LGRECT & rect);
 	bool IsPointOnLine(float *k, float *b, LGPoint & point, LGRANGE & hRange, LGRANGE & vRange);

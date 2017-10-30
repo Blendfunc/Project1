@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define _LG_IMG_COMMON_
 //#define LGTESTMODE
 #include "LGImgCommon.h"
 LGBitMap::LGBitMap()
