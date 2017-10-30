@@ -234,6 +234,10 @@ public:
 
 
 	LGErrorStates LGDicePaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//骰子画http://blog.csdn.net/bluecol/article/details/47702147
+
+
+	LGErrorStates LGOilPaintings(LGBitMapId imgInId, LGBitMapId & imgOutId);//油画效果
+
 	//
 
 	//geometric transformation几何变换
@@ -276,6 +280,8 @@ private:
 
 
 };
+芒德球
+//一些计算几何s的算法
 class LD_EXT_CLASS LGGeometryControl final
 {
 public:
