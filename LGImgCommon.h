@@ -231,6 +231,9 @@ public:
 																	   //图像卷积核运算，位图
 																	   //输出为无调色板颜色数据
 	LGErrorStates LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & imgOutId, CONVOLUTIONKERNEL * pKernel);
+
+
+	LGErrorStates LGDicePaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//骰子画http://blog.csdn.net/bluecol/article/details/47702147
 	//
 
 	//geometric transformation几何变换
