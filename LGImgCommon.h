@@ -257,6 +257,10 @@ public:
 	LGErrorStates LGSobelEdgeDetection();//sobel检测
 
 										 //
+
+
+	//一些物理效果
+	LGErrorStates LGWaterRippleEffect();//水波效果
 public:
 	LGErrorStates FreeLGObjMem();
 
