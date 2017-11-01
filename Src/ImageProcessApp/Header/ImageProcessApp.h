@@ -1,8 +1,5 @@
 #pragma once
-
-
-
-
+#include "atlconv.h"
 #include "..\..\..\DuiLib\UIlib.h"
 using namespace DuiLib;
 class CImageProcessApp : public WindowImplBase
@@ -17,6 +14,7 @@ protected:
 	HRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-
+protected:
+	std::string GetEXEPath();
 
 };
