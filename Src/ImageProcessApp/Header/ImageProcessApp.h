@@ -17,4 +17,10 @@ protected:
 protected:
 	std::string GetEXEPath();
 
+protected:
+	CControlUI * m_RenderWnd;
+	CControlUI * m_Ctrl;//用来存放m_RenderWnd的
+	CVerticalLayoutUI * m_Tool;//效果展示工具条
 };
+
+//class 
