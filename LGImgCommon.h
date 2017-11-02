@@ -244,11 +244,14 @@ public:
 	LGErrorStates LGOilPaintings(LGBitMapId imgInId, LGBitMapId & imgOutId);//油画效果
 
 
-	LGErrorStates LGASCIIPaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//ASCII
+	LGErrorStates LGASCIIPaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//ASCII画
 
 
+
+	//http://blog.csdn.net/loving_forever_/article/details/52389862
+	//https://ostagram.ru/static_pages/lenta?last_days=30&locale=en
+	LGErrorStates LGConvolutionalNeuralNetworkPaint();//学习生成另外一张风格的图片
 	//
-
 	//geometric transformation几何变换
 	LGErrorStates Symmetry1();//y=x对称
 							  //

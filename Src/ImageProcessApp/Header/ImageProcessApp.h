@@ -1,9 +1,14 @@
 #pragma once
 #include "atlconv.h"
 #include "..\..\..\DuiLib\UIlib.h"
+#include ".\RenderWnd.h"
+#include "..\..\..\LGImgCommon.h"
 using namespace DuiLib;
 class CImageProcessApp : public WindowImplBase
 {
+public:
+	CImageProcessApp();
+	~CImageProcessApp();
 protected:
 	virtual void InitWindow();
 	virtual void Notify(TNotifyUI& msg);
@@ -18,9 +23,12 @@ protected:
 	std::string GetEXEPath();
 
 protected:
-	CControlUI * m_RenderWnd;
-	CControlUI * m_Ctrl;//用来存放m_RenderWnd的
+	CRenderWnd  * m_RenderWnd;
+	CHorizontalLayoutUI * m_Ctrl;//用来存放m_RenderWnd的
 	CVerticalLayoutUI * m_Tool;//效果展示工具条
+	//
+	CButtonUI * m_BtSketch1;
+	LGBitMap m_LgBitmap;
 };
 
 //class 
