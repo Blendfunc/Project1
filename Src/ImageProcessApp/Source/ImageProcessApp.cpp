@@ -23,7 +23,7 @@ void CImageProcessApp::InitWindow()
 	m_BtSketch1 = (CButtonUI *)m_PaintManager.FindControl(_T("Sketch1"));
 	m_RenderWnd->SetAttribute(_T("padding"), _T("1,1,1,1"));
 	m_Ctrl->Add((CControlUI *)m_RenderWnd);
-	m_RenderWnd->SetBkImage(_T("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala24.bmp"));
+	m_RenderWnd->SetBkImage(_T("C:\\Users\\Public\\Pictures\\Sample Pictures\\img18.bmp"));
 	__super::InitWindow();
 }
 
@@ -39,7 +39,7 @@ void CImageProcessApp::OnClick(TNotifyUI & msg)
 		LGBitMapId id;
 		LGBitMapId outid;
 		BITMAPCOLORDATA data;
-		m_LgBitmap.LGLoadBitMap(_T("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala24.bmp") , id);
+		m_LgBitmap.LGLoadBitMap(_T("C:\\Users\\Public\\Pictures\\Sample Pictures\\img18.bmp") , id);
 		m_LgBitmap.LGSketch1(id, outid);
 		m_LgBitmap.LGGetColorData(outid, data);
 		m_RenderWnd->RefreshRenderWnd(&data);

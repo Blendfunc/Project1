@@ -3,6 +3,11 @@
 * @brief 公共图像控制 \n
 * 类的详细概述
 */
+#ifdef _LG_IMG_COMMON_
+#define LD_EXT_CLASS __declspec(dllexport)
+#else
+#define LD_EXT_CLASS __declspec(dllimport)
+#endif
 #include "windows.h"
 #include "BaseHeader.h"
 #include <map>
@@ -170,7 +175,7 @@ namespace LGMathematicalOp
 
 		static LGErrorStates MatrixMultiplication(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3);//矩阵乘法matrix1 * matrix2
 
-		static LGErrorStates HadamardMultiplication(_m_in_ MATRIX & matrix1 , _m_in_ MATRIX & matrix2 , _m_out_ MATRIX & matrix3);//Hadamard乘积
+		static LGErrorStates HadamardMultiplication(_m_in_ MATRIX & matrix1 , _m_in_ MATRIX & matrix2 , _m_out_ MATRIX & matrix3);//Hadamard乘积，matlab点乘
 
 		static LGErrorStates MatrixAddition(_m_out_ MATRIX & matrix , _m_in_ MATRIX & matrix1 , _m_in_ MATRIX & matrix2);//矩阵加法
 
@@ -182,7 +187,10 @@ namespace LGMathematicalOp
 
 		static LGErrorStates Mean(_m_out_ MATRIX & matrix, _m_in_ MATRIX & _matrix);//对应matlab中的mean方法，求每列的平均数，返回一个行向量matrix
 
+		static LGErrorStates RowVectorMean(_m_out_ caltype & r, _m_in_ MATRIX & _matrix);//求行向量的平均数
 
+		//
+		static LGErrorStates GaussElimination(_m_out_ MATRIX & matrix , _m_in_ MATRIX & _matrix);//高斯消元法
 
 	};
 }
@@ -276,6 +284,16 @@ public:
 	LGErrorStates LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId);
 
 	//
+	LGErrorStates LGDicePaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//骰子画http://blog.csdn.net/bluecol/article/details/47702147
+
+
+	LGErrorStates LGOilPaintings(LGBitMapId imgInId, LGBitMapId & imgOutId);//油画效果
+
+
+	LGErrorStates LGASCIIPaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//ASCII画
+//http://blog.csdn.net/loving_forever_/article/details/52389862
+//https://ostagram.ru/static_pages/lenta?last_days=30&locale=en
+	LGErrorStates LGConvolutionalNeuralNetworkPaint();//学习生成另外一张风格的图片
 public:
 	LGErrorStates FreeLGObjMem();
 
