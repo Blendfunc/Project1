@@ -135,7 +135,22 @@ typedef struct tagPixelData//定义了RGB
 		return *this;
 	}
 }PixelData;
-
+//20171107修改
+//为了匹配矩阵运算定义rgb三个分量为double类型
+typedef struct tagPixelFloatData
+{
+	double r;
+	double g;
+	double b;
+	tagPixelFloatData & operator= (const tagPixelFloatData & pd)
+	{
+		b = pd.b;
+		g = pd.g;
+		r = pd.r;
+		return *this;
+	}
+}PixelFloatData;
+//
 typedef struct tagLABSpace//lab色彩空间
 {
 	double l;
@@ -146,7 +161,7 @@ typedef struct tagLABSpace//lab色彩空间
 
 
 
-//包含一些数学运算
+//包含一些数学运算s
 #define USEDOUBLE
 namespace LGMathematicalOp
 {
@@ -164,15 +179,39 @@ namespace LGMathematicalOp
 		int height;
 		int width;
 		void* data;
+		int dimension;//每一个分量为caltype类型
 		/*int nType = double*/
 		/*使用double存储数据*/
+		tagMATRIX()
+		{
+			height = 0; width = 0; data = 0; dimension = 1;
+		}
 	}MATRIX;
 
+	typedef struct tagElement
+	{
+		int dimension;//每一个分量为caltype类型
+	}ELEMENT;
 	//所有内存分配全部在函数外进行
 	class LD_EXT_CLASS LGMathematicalOperation
 	{
 	public:
+		//初始化
+		//注：初始化调用顺序应该是2-> 1 或 3
 
+		//1
+		static LGErrorStates InitializationMATRIX(caltype value, _m_in_ _m_out_ MATRIX & matrix);//初始化矩阵中每个元素的值为给定的值
+		//2
+		static LGErrorStates InitializationMATRIX(_m_in_ _m_out_ MATRIX & matrix, int height, int width, int DataSize);//内存里边分配外部负责释放，这个函数主要初始化矩阵的成员，没有初始化每个元素的值
+
+		//p是初始化矩阵的数据地址，DataSize是这个数据占用的内存大小（几个字节）
+		//内存地址由外部分配，应该保证大小不会在赋值过程中溢出
+		//是InitializationMATRIX(caltype value, _m_in_ _m_out_ MATRIX & matrix)的增强版
+		//3
+		static LGErrorStates InitializationMATRIX(void * p , int DataSize , _m_in_ _m_out_ MATRIX & matrix);//初始化
+		//
+		
+		
 		static LGErrorStates MatrixMultiplication(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3);//矩阵乘法matrix1 * matrix2
 
 		static LGErrorStates HadamardMultiplication(_m_in_ MATRIX & matrix1 , _m_in_ MATRIX & matrix2 , _m_out_ MATRIX & matrix3);//Hadamard乘积，matlab点乘
@@ -188,10 +227,17 @@ namespace LGMathematicalOp
 		static LGErrorStates Mean(_m_out_ MATRIX & matrix, _m_in_ MATRIX & _matrix);//对应matlab中的mean方法，求每列的平均数，返回一个行向量matrix
 
 		static LGErrorStates RowVectorMean(_m_out_ caltype & r, _m_in_ MATRIX & _matrix);//求行向量的平均数
-
-		//
+																										   //
 		static LGErrorStates GaussElimination(_m_out_ MATRIX & matrix , _m_in_ MATRIX & _matrix);//高斯消元法
 
+
+
+		//
+
+
+		//定义复杂元素的运算
+		static LGErrorStates HadamardMultiplicationEx(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3);
+		static LGErrorStates MatrixAdditionEx(_m_out_ MATRIX & matrix, _m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2);
 	};
 }
 class LD_EXT_CLASS LGBitMap final
