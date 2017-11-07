@@ -941,9 +941,9 @@ LGErrorStates LGBitMap::LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId)
 	_matrixG.data = _pG; _matrixG.height = data.nMatrixHeight; _matrixG.width = data.nMatrixWidth;
 	_matrixB.data = _pB; _matrixB.height = data.nMatrixHeight; _matrixB.width = data.nMatrixWidth;
 
-	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrixR, matrixR, 1 / 255);
-	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrixG, matrixG, 1 / 255);
-	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrixB, matrixB, 1 / 255);
+	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrixR, matrixR, 1.0 / 255.0);
+	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrixG, matrixG, 1.0 / 255.0);
+	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrixB, matrixB, 1.0 / 255.0);
 	//
 
 	/*X = 0.5767309*R + 0.1855540*G + 0.1881852*B;
@@ -1763,7 +1763,7 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 		nAddressSrc = nAddressSrc + (sizeof(PixelData) * i);
 		PixelData * pData = (PixelData *)nAddressSrc;
 		byte * pDataDes = (byte *)nAddressDes;
-		*pDataDes = max(max(pData->b, pData->g), pData->r);
+		*pDataDes = max(max(pData->r, pData->r), pData->r);
 	}
 
 
@@ -1938,7 +1938,7 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 
 	LGMathematicalOp::MATRIX VALUE4;//这个矩阵每个元素的值都是0.8
 	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(VALUE4, dataSrcConvert.nMatrixHeight, dataSrcConvert.nMatrixWidth, sizeof(double));
-	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(0.8, _Coefficient);
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(0.8, VALUE4);
 
 	LGMathematicalOp::MATRIX VALUE5; //0.8 - F_S
 	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(VALUE5, dataSrcConvert.nMatrixHeight, dataSrcConvert.nMatrixWidth, sizeof(double));
@@ -1977,9 +1977,9 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 		p->r = *pd;
 	}
 	PixelFloatData pfData;
-	pfData.b = 105 / 255;
-	pfData.r = 210 / 255;
-	pfData.g = 225 / 255;
+	pfData.b = 105.0 / 255.0;
+	pfData.r = 210.0 / 255.0;
+	pfData.g = 225.0 / 255.0;
 	LGMathematicalOp::MATRIX Base_layer;
 	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(Base_layer, dataSrcConvert.nMatrixHeight, dataSrcConvert.nMatrixWidth, sizeof(PixelFloatData));
 	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(&pfData, sizeof(PixelFloatData), Base_layer);
@@ -2008,7 +2008,7 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 	_alphaData.g = 1 - alpha;
 	LGMathematicalOp::MATRIX _alphaMatrix;
 	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(_alphaMatrix, dataSrcConvert.nMatrixHeight, dataSrcConvert.nMatrixWidth, sizeof(PixelFloatData));
-	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(&_alphaData, sizeof(PixelFloatData), alphaMatrix);
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(&_alphaData, sizeof(PixelFloatData), _alphaMatrix);
 
 	//(1-alpha)*Base_layer
 	LGMathematicalOp::MATRIX add2;
@@ -2040,9 +2040,16 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 		nDesOut = nDesOut + (sizeof(PixelData) * i);
 		PixelFloatData * pfd = (PixelFloatData *)nSrcOut;
 		PixelData * pd = (PixelData *)nDesOut;
-		pd->b = pfd->b;
-		pd->g = pfd->g;
-		pd->r = pfd->r;
+		/*if (pfd->b > 1 || pd->g > 1 || pd->r > 1)
+		{
+			assert(0);
+		}*/
+		double dr = pfd->r * 255;
+		double dg = pfd->g * 255;
+		double db = pfd->b * 255;
+		pd->b = abs(db);
+		pd->g = abs(dg);
+		pd->r = abs(dr);
 	}
 	m_id++;
 	imgIdOut = m_id;
@@ -2060,6 +2067,7 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 
 LGErrorStates LGMathematicalOp::LGMathematicalOperation::HadamardMultiplication(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3)
 {
+	HadamardMultiplicationEx(matrix1, matrix2, matrix3);
 	return LGErrorStates();
 }
 
@@ -2305,7 +2313,7 @@ LGErrorStates LGMathematicalOp::LGMathematicalOperation::Convolution(_m_out_ MAT
 					result = result + (*ppd) * (*pf);
 				}
 			}
-			int __nAddress = (int)matrix1.data;
+			int __nAddress = (int)matrix3.data;
 			__nAddress = __nAddress + (sizeof(caltype) * ((j * matrix1.height) + i));
 			caltype * pOutPixelData = (caltype *)__nAddress;
 			*pOutPixelData = result;
