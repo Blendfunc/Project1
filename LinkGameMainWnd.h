@@ -1,5 +1,5 @@
 #pragma once
-#include "D:\\duilib-master\\DuiLib\\UIlib.h"
+#include ".\DuiLib\\UIlib.h"
 #include "LogicalProcess.h"
 #include <map>
 #include <set>
@@ -17,7 +17,7 @@ protected:
 	virtual CDuiString GetSkinFolder();
 	virtual CDuiString GetSkinFile();
 	virtual LPCTSTR GetWindowClassName(void) const;
-	HRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	CVerticalLayoutUI * m_Page;
 	CVerticalLayoutUI * m_PageAni;

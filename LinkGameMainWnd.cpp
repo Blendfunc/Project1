@@ -1,6 +1,10 @@
 #include "LinkGameMainWnd.h"
 #include "atlconv.h"
-
+#ifdef DEBUG
+#pragma comment(lib, "DuiLib_d.lib")
+#else
+#pragma comment(lib, "DuiLib.lib")
+#endif
 CLLKMainWnd::CLLKMainWnd()
 {
 	m_Page = NULL;
@@ -51,7 +55,7 @@ LPCTSTR CLLKMainWnd::GetWindowClassName(void) const
 	return _T("llkgamewnd");
 }
 
-HRESULT CLLKMainWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CLLKMainWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_LBUTTONUP)
 	{

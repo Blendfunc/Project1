@@ -2062,6 +2062,32 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 	free(_p);
 	free(px);
 	free(py);*/
+	free(p);
+	free(_p);
+	free(px);
+	free(py);
+	free(pImageEdge);
+	free(pImageAbsX);
+	free(pImageAbsY);
+	free(pI);
+	free(I_MEAN.data);
+	free(F_S.data);
+	free(Coefficient.data);
+	free(_Coefficient.data);
+	free(VALUE1.data);
+	free(VALUE2.data);
+	free(VALUE3.data);
+	free(VALUE4.data);
+	free(VALUE5.data);
+	free(Image_out.data);
+	free(Image_Dodge.data);
+	free(Base_layer.data);
+	free(alphaMatrix.data);
+	free(add1.data);
+	free(_alphaMatrix.data);
+	free(add2.data);
+	free(Image1.data);
+	free(Image3.data);
 	return LG_ERR_OTHER;
 }
 
