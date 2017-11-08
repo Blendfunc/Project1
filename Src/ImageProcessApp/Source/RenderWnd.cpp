@@ -67,7 +67,7 @@ void CRenderWnd::RefreshRenderWnd(void * pData)
 bool CRenderWnd::DoPaint(HDC hDC, const RECT & rcPaint, CControlUI * pStopControl)
 {
 	bool b = true;
-	b = __super::DoPaint(hDC, rcPaint, pStopControl);
+// 20171108注释	b = __super::DoPaint(hDC, rcPaint, pStopControl);
 	//判断当前m_DC，拷贝内存DC到屏幕DC上
 	if (m_DC.status == dc_needupdate)
 	{
