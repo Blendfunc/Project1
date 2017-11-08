@@ -3,6 +3,7 @@
 #include "..\..\..\DuiLib\UIlib.h"
 #include ".\RenderWnd.h"
 #include "..\..\..\LGImgCommon.h"
+#include "commdlg.h"
 using namespace DuiLib;
 class CImageProcessApp : public WindowImplBase
 {
@@ -16,7 +17,7 @@ protected:
 	virtual CDuiString GetSkinFolder();
 	virtual CDuiString GetSkinFile();
 	virtual LPCTSTR GetWindowClassName(void) const;
-	HRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 protected:
@@ -29,6 +30,7 @@ protected:
 	//
 	CButtonUI * m_BtSketch1;
 	LGBitMap m_LgBitmap;
+	std::string	m_path;
 };
 
 //class 

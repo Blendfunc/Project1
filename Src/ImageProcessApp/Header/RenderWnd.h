@@ -20,6 +20,11 @@ public:
 	CRenderWnd();
 	~CRenderWnd();
 	void RefreshRenderWnd(void* pData);//pData是24位颜色数据
+	//20171108修改
+	void SetBackDCStatus(dcStatus status) //暂时没有用到
+	{ 
+		m_DC.status = status;
+	}
 protected:
 	virtual bool DoPaint(HDC hDC, const RECT& rcPaint, CControlUI* pStopControl);
 
