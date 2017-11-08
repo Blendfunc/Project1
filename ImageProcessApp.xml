@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<Window size="986,675" caption="0,0,0,40">
+  
+  <Font name="微软雅黑" size="10" bold="false" id="0"/>
+  <Font name="微软雅黑" size="13.5" bold="false" id="1"/>
+  <Font name="微软雅黑" size="15" bold="false" id="2"/>
+  <Font name="微软雅黑" size="14" bold="false"/>
+  <Font name="微软雅黑" size="12.5" bold="false"/>
+  <Font name="微软雅黑" size="13" bold="false"/>
+  <Font name="微软雅黑" size="18" bold="false"/>
+
+
+  <VerticalLayout bkcolor="#FF1a1c1e"  bordersize="1" bordercolor="#ff007acc">
+    <HorizontalLayout name="header" height="40" bkcolor="#FF333537"  bordersize="1" bordercolor="#ff007acc">
+      <HorizontalLayout>
+        <Control width="10"/>
+        <Label name="title"  textpadding="0,0,0,0" width="0" text="ImageProcess"  textcolor="#ff007acc" font="2" />
+      </HorizontalLayout>
+      <Button name="closeWnd" tooltip="关闭"  height="40" width="40" padding="0,0,0,0" normalimage="file='CommonRes/close.png' source='0,0,40,40'" hotimage="file='CommonRes/close_over.png' source='0,0,40,40'" pushedimage="file='CommonRes/close_pressed.png' source='0,0,40,40'"/>
+      <!--  <Control width="10"/> -->
+    </HorizontalLayout>
+    
+    
+    <HorizontalLayout>
+    <HorizontalLayout name="c1" bordersize="1" bordercolor="#ff007acc">
+    
+    </HorizontalLayout>
+      <VerticalLayout name="tool" width="100" bordersize="1" bordercolor="#ff007acc">
+        <Button name="OpenFile" height="40" text="点我选择一张图片吧" Font="0" textcolor="#ffc8c8c8" bordersize="1" bordercolor="#ff007acc" font="0"/>
+        <Button name="Emboss" height="40" text="浮雕" Font="0" textcolor="#ff007acc" bordersize="1" bordercolor="#ff007acc" font="1"/>
+        <Button name="GaussianBlur" height="40" text="高斯模糊" Font="0" textcolor="#ff007acc" bordersize="1" bordercolor="#ff007acc" font="1"/>
+        <Button name="Sketch1" height="40" text="铅笔画" Font="0" textcolor="#ff007acc" bordersize="1" bordercolor="#ff007acc" font="1"/>
+        <Button name="Sketch2" height="40" text="铅笔画2" Font="0" textcolor="#ff007acc" bordersize="1" bordercolor="#ff007acc" font="1"/>
+      </VerticalLayout>
+    </HorizontalLayout>
+
+
+  </VerticalLayout>
+</Window>
