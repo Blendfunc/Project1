@@ -1052,6 +1052,61 @@ LGErrorStates LGBitMap::LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId)
 	return LG_ERR_OTHER;
 }
 
+LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum , double & X , double & Y)
+{
+	//这里将圆的周长变为整数
+
+	double perimeter1 = 2 * PI * circle1;
+	double perimeter2 = 2 * PI * circle2;
+
+	int nPerimeter1 = perimeter1;//小圆
+	int nPerimeter2 = perimeter2;//大圆 
+
+	if (nPerimeter2 < nPerimeter1)
+	{
+		return LG_ERR_PARAM;
+	}
+	//先求出滚动的总长度
+	int result = nPerimeter1;//求出约分后最小的那个数
+
+	int Sum = result * nPerimeter2;
+
+	sum = Sum;
+
+	int dis = (int)stepSize;
+
+	double _m = 2.0 * PI * circle2;
+	double m = dis / _m;
+	int nm = (int)m;
+	double decimals = m - nm;
+
+	double θ = (decimals) * 360;
+	double radian = (θ * PI) / 180;
+
+	/*X = cos(radian) * circle2;
+	Y = sin(radian) * circle2;*/
+	double t1 = cos(radian);
+	double t2 = sin(radian);
+	double X2 = cos(radian) * (circle2 - circle1);
+	double Y2 = sin(radian) * (circle2 - circle1);
+
+	X = X2;
+	Y = Y2;
+
+	_m = 2.0 * PI * circle1;
+	m = dis / _m;
+	nm = (int)m;
+	decimals = m - nm;
+	double θ1 = (decimals) * 360;
+	double θ2 = 360 - θ1;
+	double radian2 = (θ2 * PI) / 180;
+	double t3 = sin(radian2) * h;
+	double PX = (cos(radian2) * h) + X2;
+	double PY = (sin(radian2) * h) + Y2;
+	x = PX;
+	y = PY;
+}
+
 std::string LGBitMap::GetFileName(LPCTSTR filePath)
 {
 	std::string strPath;

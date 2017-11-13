@@ -240,7 +240,7 @@ namespace LGMathematicalOp
 		static LGErrorStates MatrixAdditionEx(_m_out_ MATRIX & matrix, _m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2);
 	};
 }
-class LD_EXT_CLASS LGBitMap final
+class LD_EXT_CLASS LGBitMap 
 {
 public:
 	LGBitMap();
@@ -340,13 +340,21 @@ public:
 //http://blog.csdn.net/loving_forever_/article/details/52389862
 //https://ostagram.ru/static_pages/lenta?last_days=30&locale=en
 	LGErrorStates LGConvolutionalNeuralNetworkPaint();//学习生成另外一张风格的图片
+
+	//
+
+	//circle1是小圆的半径，circle2是大圆的半径
+	//x,y为输出的坐标
+	//sum为总的滚动长度，stepSize应该小于sum
+	LGErrorStates LGHypotrochoid(double circle1 , double circle2 , double h , double & x , double & y , double stepSize , double & sum , double & X, double & Y);//圆内旋轮线，点在小圆的内部，小圆在大圆内部运行，h是小圆圆心到小圆内部点的距离
 public:
 	LGErrorStates FreeLGObjMem();
 
 protected:
 	std::string GetFileName(LPCTSTR filePath);
 	std::string GetSuffixName(LPCTSTR fileName);
-protected:
+//20171109修改将保护成员函数修改为公开
+public:
 	void Convert(/*BITMAPCOLORDATA * pInData , BITMAPCOLORDATA ** pOutData*/LGBitMapId & imgInId , LGBitMapId & imgOutId);//将有调色板数据转换为无调色板数据（24位彩色数据）
 
 	LGErrorStates GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel , double variance);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差
@@ -372,7 +380,7 @@ private:
 
 
 };
-class LD_EXT_CLASS LGGeometryControl final
+class LD_EXT_CLASS LGGeometryControl 
 {
 public:
 	LGErrorStates GetRectIntersect(LGRECT & inRect1 , LGRECT & inRect2 , LGRECT & outRect);
