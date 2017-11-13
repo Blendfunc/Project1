@@ -49,6 +49,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int nV = 50;
 	int nR = (2 * nV) + 1;
 	//memset(&data, 0, sizeof(BITMAPCOLORDATA));
+	double x = 0.0;
+	double y = 0.0;
+	double sum = 0.0;
+	double stepSize = 1.0;
+	double X = 0.0;
+	double Y = 0.0;
 	switch (message)        //处理得到的消息
 	{
 	case WM_CREATE:          //窗口创建完成时发来的消息
@@ -60,7 +66,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		GetClientRect(hwnd, &rect);
 		DrawText(hdc, TEXT("Hello, 这是我自己的窗口!"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 		
-		err = lgBitmap.LGLoadBitMap(TEXT("C:\\Users\\Blendfunc\\Pictures\\1.bmp") , id);
+		err = lgBitmap.LGLoadBitMap(TEXT("C:\\Users\\Public\\Pictures\\Sample Pictures\\scenery1.bmp") , id);
 		
 		//lgBitmap.LGGetColorData(id, data);
 		/*lgBitmap.Convert(id, outid);
@@ -75,7 +81,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 //		lgBitmap.LGGetColorData(outid, data);
 //		lgBitmap.LGSketch1(id, outid);
 		lgBitmap.LGGetColorData(outid, data);
-
+		
 		if (err != LG_ERR_ILLEGALiMG)
 		{
 			//_err = lgBitmap.LGGetColorData(id, data);
@@ -123,7 +129,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 							int address = (int)data.pMatrixColorData;
 							address = address + (((j*data.nMatrixHeight) + i)*sizeof(PixelData));
 							PixelData * ppd = (PixelData *)address;
-							SetPixelV(hdc, j, i, RGB(ppd->r, ppd->g, ppd->b));
+
+							while (true)
+							{
+								lgBitmap.LGHypotrochoid(33.0, 100.0, 33.0, x, y, stepSize, sum , X , Y);
+								stepSize= stepSize+1;
+								int nx = x;
+								int ny = y;
+								int nX = X;
+								int nY = Y;
+								SetPixelV(hdc, nx + 500, 500 - ny, RGB(0, 0, 0));
+								nX = nX + 500;
+								nY = nY - 500;
+								SetPixelV(hdc, nX, -nY, RGB(120, 120, 120));
+								if (stepSize > sum)                                                                                                                                                                                
+								{
+									break;
+								}
+								//Sleep(1);
+							}
+							//SetPixelV(hdc, j, i, RGB(ppd->r, ppd->g, ppd->b));
 #endif
 #endif				
 							//
