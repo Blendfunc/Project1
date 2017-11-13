@@ -1083,22 +1083,22 @@ LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h,
 	double ¦È = (decimals) * 360;
 	double radian = (¦È * PI) / 180;
 
-	/*X = cos(radian) * circle2;
-	Y = sin(radian) * circle2;*/
+	X = cos(radian) * circle2;
+	Y = sin(radian) * circle2;
 	double t1 = cos(radian);
 	double t2 = sin(radian);
 	double X2 = cos(radian) * (circle2 - circle1);
 	double Y2 = sin(radian) * (circle2 - circle1);
 
-	X = X2;
-	Y = Y2;
+	/*X = X2;
+	Y = Y2;*/
 
 	_m = 2.0 * PI * circle1;
 	m = dis / _m;
 	nm = (int)m;
 	decimals = m - nm;
 	double ¦È1 = (decimals) * 360;
-	double ¦È2 = 360 - ¦È1;
+	double ¦È2 = 360 - ¦È1 + ¦È;
 	double radian2 = (¦È2 * PI) / 180;
 	double t3 = sin(radian2) * h;
 	double PX = (cos(radian2) * h) + X2;
