@@ -1053,6 +1053,7 @@ LGErrorStates LGBitMap::LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId)
 }
 
 LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum , double & X , double & Y)
+
 {
 	//这里将圆的周长变为整数
 
@@ -1064,7 +1065,7 @@ LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h,
 
 	if (nPerimeter2 < nPerimeter1)
 	{
-		return LG_ERR_PARAM;
+		//return LG_ERR_PARAM;
 	}
 	//先求出滚动的总长度
 	int result = nPerimeter1;//求出约分后最小的那个数
@@ -1073,7 +1074,7 @@ LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h,
 
 	sum = Sum;
 
-	int dis = (int)stepSize;
+	double dis = (double)stepSize;
 
 	double _m = 2.0 * PI * circle2;
 	double m = dis / _m;
@@ -1105,6 +1106,7 @@ LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h,
 	double PY = (sin(radian2) * h) + Y2;
 	x = PX;
 	y = PY;
+	return LG_ERR_PARAM;
 }
 
 std::string LGBitMap::GetFileName(LPCTSTR filePath)

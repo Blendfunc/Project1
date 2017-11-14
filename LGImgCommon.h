@@ -342,11 +342,6 @@ public:
 	LGErrorStates LGConvolutionalNeuralNetworkPaint();//学习生成另外一张风格的图片
 
 	//
-
-	//circle1是小圆的半径，circle2是大圆的半径
-	//x,y为输出的坐标
-	//sum为总的滚动长度，stepSize应该小于sum
-	LGErrorStates LGHypotrochoid(double circle1 , double circle2 , double h , double & x , double & y , double stepSize , double & sum , double & X, double & Y);//圆内旋轮线，点在小圆的内部，小圆在大圆内部运行，h是小圆圆心到小圆内部点的距离
 public:
 	LGErrorStates FreeLGObjMem();
 
@@ -380,16 +375,32 @@ private:
 
 
 };
+//一些几何图形
 class LD_EXT_CLASS LGGeometryControl 
 {
+	typedef struct Direction
+	{
+		LGPoint origin;
+		LGPoint destination;
+	};
 public:
 	LGErrorStates GetRectIntersect(LGRECT & inRect1 , LGRECT & inRect2 , LGRECT & outRect);
 	LGErrorStates GetLineIntersect(LGLine & line1 , LGLine & line2 , LGPoint & point);
 	bool IsPtInRect(LGRECT & rect , LGPoint & point);
 	LGErrorStates GetOrthogonalLineIntersect(LGLine & line1 , LGLine & line2 , LGPoint & point);
+	//circle1是小圆的半径，circle2是大圆的半径
+	//x,y为输出的坐标
+	//sum为总的滚动长度，stepSize应该小于sum
+	LGErrorStates LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum, double & X, double & Y);//圆内旋轮线，点在小圆的内部，小圆在大圆内部运行，h是小圆圆心到小圆内部点的距离
+	LGErrorStates LGBesselCurve(std::vector<LGPoint> & vecPoint , double &  proportion);//贝塞尔曲线
+
+
+
 private:
 	bool CollatingData(LGPoint & point1 , LGPoint & point2 , LGPoint & point3 , LGPoint & point4 , LGRECT & rect);
 	bool IsPointOnLine(float *k , float *b , LGPoint & point , LGRANGE & hRange , LGRANGE & vRange);
+	bool GetDistance(LGPoint & point1, LGPoint & point2, double & distance);//获取两个平面直角坐标系点的距离
+	bool GetPoint(LGPoint & point1 , LGPoint & point2 , Direction & direction , double & step , LGPoint & point3);//获取从A点到B点（direction指定的）距离A点step距离长度的点point3
 };
 
 
