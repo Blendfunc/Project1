@@ -16,6 +16,7 @@
 #include <atlconv.h>
 #include <algorithm>
 #include "math.h"
+#include <vector>
 typedef HANDLE							LGObjId;
 
 typedef int								LGBitMapId;
@@ -380,8 +381,8 @@ class LD_EXT_CLASS LGGeometryControl
 {
 	typedef struct Direction
 	{
-		LGPoint origin;
-		LGPoint destination;
+		LGPoint origin;//开始点的位置
+		LGPoint destination;//结束点的位置
 	};
 public:
 	LGErrorStates GetRectIntersect(LGRECT & inRect1 , LGRECT & inRect2 , LGRECT & outRect);
@@ -392,14 +393,15 @@ public:
 	//x,y为输出的坐标
 	//sum为总的滚动长度，stepSize应该小于sum
 	LGErrorStates LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum, double & X, double & Y);//圆内旋轮线，点在小圆的内部，小圆在大圆内部运行，h是小圆圆心到小圆内部点的距离
-	LGErrorStates LGBesselCurve(std::vector<LGPoint> & vecPoint , double &  proportion);//贝塞尔曲线
+	LGErrorStates LGBesselCurve(std::vector<LGPoint> & vecPoint , double & proportion);//贝塞尔曲线
 
 
 
 private:
 	bool CollatingData(LGPoint & point1 , LGPoint & point2 , LGPoint & point3 , LGPoint & point4 , LGRECT & rect);
 	bool IsPointOnLine(float *k , float *b , LGPoint & point , LGRANGE & hRange , LGRANGE & vRange);
-	bool GetDistance(LGPoint & point1, LGPoint & point2, double & distance);//获取两个平面直角坐标系点的距离
+	bool GetDistance(LGPoint & point1, LGPoint & point2, double & distance);//获取两个平面直角坐标系点的距离（二维空间）
+	bool GetTwoPointSlope(LGPoint & point1 , LGPoint & point2 , double & slope);//获取两点的斜率
 	bool GetPoint(LGPoint & point1 , LGPoint & point2 , Direction & direction , double & step , LGPoint & point3);//获取从A点到B点（direction指定的）距离A点step距离长度的点point3
 };
 

@@ -777,6 +777,52 @@ bool LGGeometryControl::IsPointOnLine(float * k, float * b, LGPoint & point, LGR
 	return false;
 }
 
+bool LGGeometryControl::GetDistance(LGPoint & point1, LGPoint & point2, double & distance)
+{
+	distance = sqrt(pow(point1.x - point2.x) + pow(point1.y - point2.y));
+}
+
+bool LGGeometryControl::GetTwoPointSlope(LGPoint & point1, LGPoint & point2, double & slope)
+{
+	if (point2.x == point1.x)
+	{
+		assert(0);
+	}
+	slope = (point2.y - point1.y) / (point2.x - point1.x);
+}
+
+bool LGGeometryControl::GetPoint(LGPoint & point1, LGPoint & point2, Direction & direction, double & step, LGPoint & point3)
+{
+	double k = 0.0;
+
+	GetTwoPointSlope(point1 , point2 , k);
+
+	double x = sqrt(pow(step) / (1 + pow(k)));
+
+	double y = sqrt(pow(step) / (1 + (1 / pow(k))));
+
+	double _x = 0.0;
+	double _y = 0.0;
+	if (direction.origin.x < direction.destination.x)
+	{
+		_x = x;
+	}
+	else
+	{
+		_x = -x;
+	}
+	if (direction.origin.y < direction.destination.y)
+	{
+		_y = y;
+	}
+	else
+	{
+		_y = -y;
+	}
+	point3.x = direction.origin.x + _x;
+	point3.y = direction.origin.y + _y;
+}
+
 LGErrorStates LGBitMap::LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & imgOutId, CONVOLUTIONKERNEL * pKernel)
 {
 	if (pKernel == 0 || m_mapColorData.count(imgInId) == 0)
@@ -1052,7 +1098,7 @@ LGErrorStates LGBitMap::LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId)
 	return LG_ERR_OTHER;
 }
 
-LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum , double & X , double & Y)
+LGErrorStates LGGeometryControl::LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum , double & X , double & Y)
 
 {
 	//这里将圆的周长变为整数
@@ -1107,6 +1153,10 @@ LGErrorStates LGBitMap::LGHypotrochoid(double circle1, double circle2, double h,
 	x = PX;
 	y = PY;
 	return LG_ERR_PARAM;
+}
+LGErrorStates LGGeometryControl::LGBesselCurve(std::vector<LGPoint>& vecPoint, double & proportion)
+{
+	
 }
 
 std::string LGBitMap::GetFileName(LPCTSTR filePath)
