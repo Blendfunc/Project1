@@ -779,16 +779,20 @@ bool LGGeometryControl::IsPointOnLine(float * k, float * b, LGPoint & point, LGR
 
 bool LGGeometryControl::GetDistance(LGPoint & point1, LGPoint & point2, double & distance)
 {
-	distance = sqrt(pow(point1.x - point2.x) + pow(point1.y - point2.y));
+	distance = sqrt(pow(point1.x - point2.x , 2) + pow(point1.y - point2.y , 2));
+	return true;
 }
 
 bool LGGeometryControl::GetTwoPointSlope(LGPoint & point1, LGPoint & point2, double & slope)
 {
 	if (point2.x == point1.x)
 	{
-		assert(0);
+		slope = (point2.y - point1.y) / (point2.x - (point1.x + TINYNUM));
+		return true;
+		//assert(0);
 	}
 	slope = (point2.y - point1.y) / (point2.x - point1.x);
+	return true;
 }
 
 bool LGGeometryControl::GetPoint(LGPoint & point1, LGPoint & point2, Direction & direction, double & step, LGPoint & point3)
@@ -797,9 +801,9 @@ bool LGGeometryControl::GetPoint(LGPoint & point1, LGPoint & point2, Direction &
 
 	GetTwoPointSlope(point1 , point2 , k);
 
-	double x = sqrt(pow(step) / (1 + pow(k)));
+	double x = sqrt(pow(step , 2) / (1 + pow(k , 2)));
 
-	double y = sqrt(pow(step) / (1 + (1 / pow(k))));
+	double y = sqrt(pow(step , 2) / (1 + (1 / pow(k , 2))));
 
 	double _x = 0.0;
 	double _y = 0.0;
@@ -821,6 +825,7 @@ bool LGGeometryControl::GetPoint(LGPoint & point1, LGPoint & point2, Direction &
 	}
 	point3.x = direction.origin.x + _x;
 	point3.y = direction.origin.y + _y;
+	return true;
 }
 
 LGErrorStates LGBitMap::LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & imgOutId, CONVOLUTIONKERNEL * pKernel)
@@ -1154,9 +1159,46 @@ LGErrorStates LGGeometryControl::LGHypotrochoid(double circle1, double circle2, 
 	y = PY;
 	return LG_ERR_PARAM;
 }
-LGErrorStates LGGeometryControl::LGBesselCurve(std::vector<LGPoint>& vecPoint, double & proportion)
+LGErrorStates LGGeometryControl::LGBesselCurve(LGPolygon & polygon, double & proportion , LGPoint & result)
 {
+	//用递归方法求解
+	LGPoint point;
+	polygon.GetStartPoint(point);
+	LGPoint nextPoint;
+	double distance = 0.0;
+	//
+	polygon.GetNextPoint(point, nextPoint);
+	LGPoint rPoint;//计算出来的结果点
+	GetDistance(point, nextPoint, distance);
+	Direction dt;
+	dt.origin.x = point.x; dt.origin.y = point.y; dt.destination.x = nextPoint.x; dt.destination.y = nextPoint.y;
+	double step = distance * proportion;
+	GetPoint(point, nextPoint, dt, step, rPoint);
+	point.x = nextPoint.x;
+	point.y = nextPoint.y;
+	if (polygon.GetNextPoint(point, nextPoint) == false)
+	{
+		//说明这是最终的结果
+		result.x = rPoint.x;
+		result.y = rPoint.y;
+		return LG_ERR_OTHER;
+	}
+	//
+	LGPolygon _polygon(rPoint);
 	
+	while (polygon.GetNextPoint(point , nextPoint) == true)
+	{
+		GetDistance(point, nextPoint, distance);
+		Direction dt;
+		dt.origin.x = point.x; dt.origin.y = point.y; dt.destination.x = nextPoint.x; dt.destination.y = nextPoint.y;
+		double step = distance * proportion;
+		LGPoint point3;
+		GetPoint(point, nextPoint, dt, step, point3);
+		_polygon.AddPoint(&point3);
+		point.x = nextPoint.x;
+		point.y = nextPoint.y;
+	}
+	LGBesselCurve(_polygon, proportion, result);
 }
 
 std::string LGBitMap::GetFileName(LPCTSTR filePath)
@@ -2641,3 +2683,122 @@ LGErrorStates LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(vo
 	}
 	return LG_ERR_OTHER;
 }
+bool LGPolygon::AddPoint(LGPoint * point)
+{
+	if (m_StartPoint == 0)
+	{
+		return false;
+	}
+	//SetEndPoint(*point);
+	LGPoint * _point = GetNewPoint(point->x, point->y);
+	m_EndPoint = _point;
+	assert(m_CurrentPoint);
+	map.insert(std::pair<LGPoint *, LGPoint *>(m_CurrentPoint, _point));
+	m_CurrentPoint = _point;
+	return true;
+}
+
+bool LGPolygon::GetPolygon(AllPointPath & path)
+{
+	//这里的path由外部分配
+	path.currentPoint->x = m_StartPoint->x;
+	path.currentPoint->y = m_StartPoint->y;
+	AllPointPath * _path = &path;
+	LGPoint * point = m_StartPoint;
+	for (int i = 0; i < map.size(); i++)
+	{
+		if(map.count(point))
+		{
+			_path->currentPoint->x = map.at(point)->x;
+
+			_path->currentPoint->y = map.at(point)->y;
+
+			_path = _path->path;
+
+			point = map.at(point);
+		}		
+	}
+	_path->currentPoint->x = point->x;
+	_path->currentPoint->y = point->y;
+	_path->path = 0;
+	return true;
+}
+
+bool LGPolygon::GetNextPoint(LGPoint & point , LGPoint & nextPoint)
+{
+	//算法速度可能会慢
+	for (auto iter = map.begin(); iter != map.end(); iter++)
+	{
+		if (iter->first->x == point.x && iter->first->y == point.y)
+		{
+			nextPoint.x = iter->second->x;
+			nextPoint.y = iter->second->y;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool LGPolygon::GetLastPoint(LGPoint & point, LGPoint & lastPoint)
+{
+	//算法速度可能会慢
+	for (auto iter = map.begin(); iter != map.end(); iter++)
+	{
+		if (iter->second->x == point.x && iter->second->y == point.y)
+		{
+			lastPoint.x = iter->first->x;
+			lastPoint.y = iter->first->y;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool LGPolygon::GetStartPoint(LGPoint & startPoint)
+{
+	startPoint.x = m_StartPoint->x;
+	startPoint.y = m_StartPoint->y;
+	return false;
+}
+
+bool LGPolygon::GetEndPoint(LGPoint & endPoint)
+{
+	endPoint.x = m_EndPoint->x;
+	endPoint.y = m_EndPoint->y;
+	return false;
+}
+
+void LGPolygon::SetStartPoint(LGPoint & point)
+{
+	m_StartPoint = GetNewPoint(point.x , point.y);
+	m_CurrentPoint = m_StartPoint;
+}
+
+void LGPolygon::SetEndPoint(LGPoint & point)
+{
+	m_EndPoint = GetNewPoint(point.x, point.y);
+}
+
+LGPoint * LGPolygon::GetNewPoint(double x, double y)
+{
+	LGPoint * pStart = (LGPoint *)malloc(sizeof(LGPoint));
+	if (pStart == 0)
+	{
+		assert(0);
+	}
+	pStart->x = x;
+	pStart->y = y;
+	memory.push_back(pStart);
+	return pStart;
+}
+
+void LGPolygon::Clear()
+{
+	for (auto iter = memory.begin(); iter != memory.end(); iter++)
+	{
+		free(*iter);
+		*iter = 0;
+	}
+}
+
+

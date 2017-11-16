@@ -377,13 +377,67 @@ private:
 
 };
 //一些几何图形
+//这里定义一些结构体
+typedef struct Direction
+{
+	LGPoint origin;//开始点的位置
+	LGPoint destination;//结束点的位置
+};
+
+typedef struct TwoPointPath
+{
+	const LGPoint * currentPoint;
+	const LGPoint * nextPoint;
+};
+
+typedef struct AllPointPath
+{
+	LGPoint * currentPoint;
+	AllPointPath * path;
+};
+//
+//定义一个多边形20171116
+class LGPolygon
+{	
+public:
+	LGPolygon(LGPoint & startPoint)
+	{
+		m_StartPoint = 0;
+		m_CurrentPoint = 0;
+		SetStartPoint(startPoint);
+		m_EndPoint = m_StartPoint;
+		//SetEndPoint(startPoint);
+	}
+	~LGPolygon()
+	{
+		Clear();
+	}
+public:
+	
+	bool AddPoint(LGPoint * point);//默认连接上一个添加过的点
+	bool GetPolygon(AllPointPath & path);//获取添加的点连接成的多边形（次序关系），这里觉得这块的内存应该由外部分配
+	bool GetNextPoint(LGPoint & point , LGPoint & nextPoint);//获取给出的point的下一个点
+	const LGPoint * GetNextPoint();
+	const LGPoint * GetLastPoint();
+	bool GetLastPoint(LGPoint & point , LGPoint & lastPoint);//获取给出的point的上一个点
+	bool GetStartPoint(LGPoint & startPoint);
+	bool GetEndPoint(LGPoint & endPoint);
+	
+private:
+	LGPoint * m_CurrentPoint;
+protected:
+	std::vector<LGPoint *> memory;
+	std::map<LGPoint *, LGPoint *> map;//对应关系：点——》下一个点，这里只记录大于等于两个以上的点
+	LGPoint * m_StartPoint;//起始点
+	LGPoint * m_EndPoint;//
+	void SetStartPoint(LGPoint & point);
+	void SetEndPoint(LGPoint & point);
+	LGPoint * GetNewPoint(double x, double y);
+	void Clear();//清空内存
+};
 class LD_EXT_CLASS LGGeometryControl 
 {
-	typedef struct Direction
-	{
-		LGPoint origin;//开始点的位置
-		LGPoint destination;//结束点的位置
-	};
+	
 public:
 	LGErrorStates GetRectIntersect(LGRECT & inRect1 , LGRECT & inRect2 , LGRECT & outRect);
 	LGErrorStates GetLineIntersect(LGLine & line1 , LGLine & line2 , LGPoint & point);
@@ -393,7 +447,10 @@ public:
 	//x,y为输出的坐标
 	//sum为总的滚动长度，stepSize应该小于sum
 	LGErrorStates LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum, double & X, double & Y);//圆内旋轮线，点在小圆的内部，小圆在大圆内部运行，h是小圆圆心到小圆内部点的距离
-	LGErrorStates LGBesselCurve(std::vector<LGPoint> & vecPoint , double & proportion);//贝塞尔曲线
+	
+																																						  
+	//polygon为点集，proportion为比例
+	LGErrorStates LGBesselCurve(LGPolygon & polygon, double & proportion , LGPoint & result);//贝塞尔曲线
 
 
 
