@@ -311,7 +311,9 @@ public:
 	LGErrorStates LGNegative(LGBitMapId imgIdIn, LGBitMapId & imgIdOut);//底片效果
 	LGErrorStates LGSketch1(LGBitMapId imgInId , LGBitMapId & imgIdOut);//素描效果
 	LGErrorStates LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut);//素描效果http://blog.csdn.net/matrix_space/article/details/38709605
+	LGErrorStates LGBilateralFiltering(LGBitMapId imgInId, LGBitMapId & imgIdOut , double nRange , double nRange2);//双边滤波，nRange2为值标准差，nRange为距离标准差
 	//
+
 
 	//图像卷积核运算，位图
 	//输出为无调色板颜色数据
@@ -329,7 +331,7 @@ public:
 
 	//颜色空间转换
 	LGErrorStates LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId);
-
+	LGErrorStates LGLAB2RGB(LGBitMapId imgInId, LGBitMapId & imgOutId);//20171126新增
 	//
 	LGErrorStates LGDicePaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//骰子画http://blog.csdn.net/bluecol/article/details/47702147
 
@@ -355,8 +357,11 @@ public:
 
 	LGErrorStates GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel , double variance);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差
 	LGErrorStates TwoDimensionalGaussianFunction(/*in*/double * x, /*in*/double * y, /*out*/double * r , double * variance);//二维高斯函数，variance为方差
+	LGErrorStates TwoDimensionalGaussianFunction(/*in*/double * distance , /*out*/double * r, double * variance);//二维高斯函数，variance为方差
+
 	LGErrorStates ProcessBoundary1(int nHeight , int nWidth , BITMAPCOLORDATA * data , /*out*/LGBitMapId & imgOutId , LGBitMapId imgInId);//图像滤波处理图像边缘问题，处理方法是拷贝图像对边像素，保证宽高均为奇数
 	LGErrorStates ProcessBoundary2(int nHeight, int nWidth, BITMAPCOLORDATA * data, /*out*/LGBitMapId & imgOutId , LGBitMapId imgInId);//图像滤波处理图像边缘问题，处理方法是拷贝图像邻边（x轴或y轴对称）像素，保证宽高均为奇数，nHeight，nWidth分别为卷积核的高宽
+	LGErrorStates GenerateBilateralFilter(CONVOLUTIONKERNEL * pKernel, double variance1, double variance2 , /*in*/LGMathematicalOp::MATRIX & matrix);//产生一个双边滤波器variance2是另一个函数（非高斯模糊）的方差，matrix为外部传进来的颜色数据（彩色，若是灰度数据，则应该依据一张已有的表计算，可以加快运算速度）
 private:
 	std::map<LGObjId , LGObjType>				m_ImgSet;
 	std::map<LGObjId , LGObjType>				m_MemDCId;

@@ -1354,6 +1354,19 @@ LGErrorStates LGBitMap::TwoDimensionalGaussianFunction(double * x, double * y, d
 
 }
 
+LGErrorStates LGBitMap::TwoDimensionalGaussianFunction(double * distance, double * r, double * variance)
+{
+	if (distance && r && variance)
+	{
+		double n = (-1 * (*distance) * (*distance)) / (2 * (*variance)*(*variance));
+		*r = (1 / (2 * PI*(*variance)*(*variance)))*(exp(n));
+	}
+	else
+	{
+		return LG_ERR_PARAM;
+	}
+}
+
 LGErrorStates LGBitMap::ProcessBoundary1(int nHeight, int nWidth, BITMAPCOLORDATA * data, /*out*/LGBitMapId & imgOutId, LGBitMapId imgInId)
 {
 	if (nHeight % 2 != 0 && nWidth % 2 != 0)
@@ -1592,6 +1605,100 @@ LGErrorStates LGBitMap::ProcessBoundary2(int nHeight, int nWidth, BITMAPCOLORDAT
 		}
 	}
 	else
+	{
+		return LG_ERR_PARAM;
+	}
+}
+
+LGErrorStates LGBitMap::GenerateBilateralFilter(CONVOLUTIONKERNEL * pKernel, double variance1, double variance2, LGMathematicalOp::MATRIX & matrix)
+{
+	//应当保证输入的矩阵有中心点，这里不做检查
+	if (pKernel && pKernel->pData)
+	{
+		//
+		if (pKernel->type == DOUBLENUMBER)
+		{
+			if (pKernel->nHeight == pKernel->nWidth)
+			{
+				int center = ((pKernel->nHeight) / 2);
+				//取matrix中心像素的颜色值
+				PixelFloatData matrixData;
+				if (matrix.dimension != 3)
+				{
+					assert(0);
+				}
+				else
+				{
+					int centerX = matrix.width / 2;
+					int centerY = matrix.height / 2;
+					int pMatrixData = (int)matrix.data;
+					pMatrixData = pMatrixData + ((((matrix.height)*centerX) + centerY) * sizeof(double) * matrix.dimension);//double应该为caltype，没有做检查
+					PixelFloatData * pData = (PixelFloatData *)pMatrixData;
+					matrixData.b = pData->b;
+					matrixData.g = pData->g;
+					matrixData.r = pData->r;
+				}
+
+
+				//
+				for (int i = 0; i < pKernel->nHeight; i++)
+				{
+					for (int j = 0; j < pKernel->nWidth; j++)
+					{
+						//左移center，上移center
+						//Spatial Weight http://blog.csdn.net/shenziheng1/article/details/50838970
+						double x = j - center;
+						double y = (-1 * i) + center;
+						int pAddress = (int)(pKernel->pData);
+						pAddress = pAddress + (((pKernel->nHeight*j) + i) * sizeof(double));
+						double * pFloat = (double *)pAddress;
+						TwoDimensionalGaussianFunction(&x, &y, pFloat, &variance1);
+						//
+						int _pAddress = (int)matrix.data;
+						_pAddress = _pAddress + ((((matrix.height)*j) + i) * sizeof(double) * matrix.dimension);
+						PixelFloatData * _pData = (PixelFloatData *)_pAddress;
+						double param1 = _pData->b - matrixData.b;
+						double param2 = _pData->g - matrixData.g;
+						double param3 = _pData->r - matrixData.r;
+						double param4 = (param1 * param1) + (param2 * param2) + (param3 * param3);
+						double distance = pow(param4 , 0.5);
+						double r = 0.0;
+						TwoDimensionalGaussianFunction(&distance, &r, &variance2);
+						*pFloat = (*pFloat) * r;
+					}
+				}
+				//保证矩阵之和为1
+				double fSum = 0.0;
+				for (int i = 0; i < pKernel->nHeight * pKernel->nWidth; i++)
+				{
+					int pAddress = (int)(pKernel->pData);
+					pAddress = pAddress + (i * sizeof(double));
+					double * pf = (double *)pAddress;
+					fSum = fSum + *pf;
+				}
+				for (int i = 0; i < pKernel->nHeight * pKernel->nWidth; i++)
+				{
+					int pAddress = (int)(pKernel->pData);
+					pAddress = pAddress + (i * sizeof(double));
+					double * pf = (double *)pAddress;
+					*pf = (*pf) / fSum;
+				}
+			}
+			else
+			{
+				return LG_ERR_PARAM;
+			}
+		}
+		else
+		{
+			return LG_ERR_PARAM;
+		}
+	}
+	else
+	{
+		return LG_ERR_PARAM;
+	}
+	if (pKernel->nHeight == 0 || pKernel->nWidth == 0)
 	{
 		return LG_ERR_PARAM;
 	}
@@ -2238,6 +2345,136 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 	free(Image1.data);
 	free(Image3.data);
 	return LG_ERR_OTHER;
+}
+
+LGErrorStates LGBitMap::LGBilateralFiltering(LGBitMapId imgInId, LGBitMapId & imgIdOut , double nRange , double nRange2)
+{
+	//在 3σ 以外的贡献比例非常小，为 0.1 %，因此我们截断模板时，对模板边界定义为 3σ ；
+	int _r = (3 * nRange) + 0.5;
+
+	if (m_mapColorData.count(imgInId) == 0)
+	{
+		return LG_ERR_PARAM;
+	}
+	LGBitMapId outId;
+	outId = imgInId;
+	if (m_mapColorData.at(imgInId).img == IMGBMP1 || m_mapColorData.at(imgInId).img == IMGBMP4 || m_mapColorData.at(imgInId).img == IMGBMP8)
+	{
+		Convert(imgInId, outId);
+	}
+
+	if (outId != -1)
+	{
+		LGBitMapId OutExId = 0;
+		BITMAPCOLORDATA data;
+		memset(&data, 0, sizeof(BITMAPCOLORDATA));
+		LGErrorStates err = LGGetColorData(outId, data);
+		if (err != LG_ERR_ERRID)
+		{
+			LGErrorStates _err = ProcessBoundary2((2 * _r) + 1, (2 * _r) + 1, &data, OutExId, outId);
+			if (_err != LG_ERR_PARAM)
+			{
+				BITMAPCOLORDATA dataEx;
+				memset(&dataEx, 0, sizeof(BITMAPCOLORDATA));
+				LGGetColorData(OutExId, dataEx);
+				BITMAPCOLORDATA processedData;
+				memset(&processedData, 0, sizeof(BITMAPCOLORDATA));
+				processedData.nMatrixHeight = data.nMatrixHeight;
+				processedData.nMatrixWidth = data.nMatrixWidth;
+				processedData.pMatrixColorData = malloc(sizeof(PixelData) * processedData.nMatrixHeight * processedData.nMatrixWidth);
+				processedData.img = IMGBMP24;
+				for (int i = 0; i < processedData.nMatrixHeight; i++)
+				{
+					for (int j = 0; j < processedData.nMatrixWidth; j++)
+					{
+						//计算矩阵乘积
+						int x = (((2 * _r) + 1) / 2) + j;
+						int y = (((2 * _r) + 1) / 2) + i;
+						int leftTopX = x - (((2 * _r) + 1) / 2);
+						int leftTopY = y - (((2 * _r) + 1) / 2);
+						double r = 0.0;
+						double g = 0.0;
+						double b = 0.0;
+						//为计算双边滤波提供一个颜色矩阵
+						int nMatrixHeight = (2 * _r) + 1;
+						int nMatrixWidth = nMatrixHeight;
+						void * pMatrix = malloc(nMatrixHeight * nMatrixWidth * sizeof(double));
+						CONVOLUTIONKERNEL kernel;
+						memset(&kernel, 0, sizeof(CONVOLUTIONKERNEL));
+						kernel.nHeight = nMatrixHeight;
+						kernel.nWidth = nMatrixWidth;
+						kernel.pData = pMatrix;
+						kernel.type = DOUBLENUMBER;
+						
+						LGMathematicalOp::MATRIX matrix;
+						int DataSize = sizeof(PixelFloatData) / sizeof(double);
+						LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(matrix , kernel.nHeight , kernel.nWidth , sizeof(double) * DataSize);
+						CONVOLUTIONKERNEL * pKernel = &kernel;
+						for (int k = 0; k < pKernel->nHeight; k++)
+						{
+							for (int m = 0; m < pKernel->nWidth; m++)
+							{
+								int processX = leftTopX + m;
+								int processY = leftTopY + k;
+								int nAddress = (int)dataEx.pMatrixColorData;
+								nAddress = nAddress + (((processX * dataEx.nMatrixHeight) + processY) * sizeof(PixelData));
+								PixelData * ppd = (PixelData *)nAddress;
+								int _nAddress = (int)matrix.data;
+								_nAddress = _nAddress + (((m * matrix.height) + k) * sizeof(PixelFloatData));
+								PixelFloatData * pfd = (PixelFloatData *)_nAddress;
+								pfd->b = ppd->b;
+								pfd->g = ppd->g;
+								pfd->r = ppd->r;
+							}
+						}
+						GenerateBilateralFilter(&kernel , nRange , nRange2, matrix);
+
+						
+
+
+						//
+						for (int k = 0; k < pKernel->nHeight; k++)
+						{
+							for (int m = 0; m < pKernel->nWidth; m++)
+							{
+								int processX = leftTopX + m;
+								int processY = leftTopY + k;
+								int nAddress = (int)dataEx.pMatrixColorData;
+								nAddress = nAddress + (((processX * dataEx.nMatrixHeight) + processY) * sizeof(PixelData));
+								PixelData * ppd = (PixelData *)nAddress;
+								if (pKernel->type == DOUBLENUMBER)
+								{
+									int _nAddress = (int)pKernel->pData;
+									_nAddress = _nAddress + (sizeof(double) * ((m * pKernel->nHeight) + k));
+									double * pf = (double *)_nAddress;
+									b = b + (ppd->b * (*pf));
+									g = g + (ppd->g * (*pf));
+									r = r + (ppd->r * (*pf));
+								}
+							}
+						}
+						int __nAddress = (int)processedData.pMatrixColorData;
+						__nAddress = __nAddress + (sizeof(PixelData) * ((j * processedData.nMatrixHeight) + i));
+						PixelData * pOutPixelData = (PixelData *)__nAddress;
+						pOutPixelData->b = b;
+						pOutPixelData->g = g;
+						pOutPixelData->r = r;
+						//
+						free(matrix.data);
+						free(pMatrix);
+					}
+				}
+				m_id++;
+				m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(m_id, processedData));
+				imgIdOut = m_id;
+			}
+		}
+		else
+		{
+			return LG_ERR_PARAM;
+		}
+
+	}
 }
 
 LGErrorStates LGMathematicalOp::LGMathematicalOperation::HadamardMultiplication(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3)
