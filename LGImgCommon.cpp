@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 //#define LGTESTMODE
 #include "LGImgCommon.h"
+
 LGBitMap::LGBitMap()
 {
 	m_id = 0;
@@ -915,6 +916,91 @@ LGErrorStates LGBitMap::LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & 
 	}
 }
 
+void LGBitMap::RGB2Lab(double R, double G, double B, double & L, double & a, double & b)
+{
+	double X, Y, Z, fX, fY, fZ;
+
+	X = 0.412453*R + 0.357580*G + 0.180423*B;
+	Y = 0.212671*R + 0.715160*G + 0.072169*B;
+	Z = 0.019334*R + 0.119193*G + 0.950227*B;
+
+	X /= (255 * 0.950456);
+	Y /= 255;
+	Z /= (255 * 1.088754);
+
+	if (Y > 0.008856)
+	{
+		fY = pow(Y, 1.0 / 3.0);
+		L = 116.0*fY - 16.0;
+	}
+	else
+	{
+		fY = 7.787*Y + 16.0 / 116.0;
+		L = 903.3*Y;
+	}
+
+	if (X > 0.008856)
+		fX = pow(X, 1.0 / 3.0);
+	else
+		fX = 7.787*X + 16.0 / 116.0;
+
+	if (Z > 0.008856)
+		fZ = pow(Z, 1.0 / 3.0);
+	else
+		fZ = 7.787*Z + 16.0 / 116.0;
+
+	a = 500.0*(fX - fY);
+	b = 200.0*(fY - fZ);
+
+	if (L < BLACK)
+	{
+		a *= exp((L - BLACK) / (BLACK / 4));
+		b *= exp((L - BLACK) / (BLACK / 4));
+		L = BLACK;
+	}
+	if (b > YELLOW)
+		b = YELLOW;
+}
+
+void LGBitMap::Lab2RGB(double L, double a, double b, double & R, double & G, double & B)
+{
+	double X, Y, Z, fX, fY, fZ;
+	double RR, GG, BB;
+	fY = pow((L + 16.0) / 116.0, 3.0);
+	if (fY < 0.008856)
+		fY = L / 903.3;
+	Y = fY;
+
+	if (fY > 0.008856)
+		fY = pow(fY, 1.0 / 3.0);
+	else
+		fY = 7.787 * fY + 16.0 / 116.0;
+
+	fX = a / 500.0 + fY;
+	if (fX > 0.206893)
+		X = pow(fX, 3.0);
+	else
+		X = (fX - 16.0 / 116.0) / 7.787;
+
+	fZ = fY - b / 200.0;
+	if (fZ > 0.206893)
+		Z = pow(fZ, 3.0);
+	else
+		Z = (fZ - 16.0 / 116.0) / 7.787;
+
+	X *= (0.950456 * 255);
+	Y *= 255;
+	Z *= (1.088754 * 255);
+
+	RR = 3.240479*X - 1.537150*Y - 0.498535*Z;
+	GG = -0.969256*X + 1.875992*Y + 0.041556*Z;
+	BB = 0.055648*X - 0.204043*Y + 1.057311*Z;
+
+	R = (float)(RR < 0 ? 0 : RR > 255 ? 255 : RR);
+	G = (float)(GG < 0 ? 0 : GG > 255 ? 255 : GG);
+	B = (float)(BB < 0 ? 0 : BB > 255 ? 255 : BB);
+}
+
 LGErrorStates LGBitMap::LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId)
 {
 
@@ -1103,6 +1189,92 @@ LGErrorStates LGBitMap::LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId)
 	return LG_ERR_OTHER;
 }
 
+LGErrorStates LGBitMap::LGLAB2RGB(LGBitMapId imgInId, LGBitMapId & imgOutId)
+{
+	LGBitMapId outId = imgInId;
+	if (m_mapColorData.at(imgInId).img == IMGBMP1 || m_mapColorData.at(imgInId).img == IMGBMP4 || m_mapColorData.at(imgInId).img == IMGBMP8)
+	{
+		Convert(imgInId, outId);
+	}
+	BITMAPCOLORDATA data;
+	memset(&data, 0, sizeof(BITMAPCOLORDATA));
+	LGGetColorData(outId, data);
+	assert(data.pMatrixColorData);
+	void * pLABSpace = malloc(sizeof(PixelData) * data.nMatrixHeight * data.nMatrixWidth);
+	BITMAPCOLORDATA colorData; memset(&colorData, 0, sizeof(BITMAPCOLORDATA));
+	colorData.colorSpace = RGB;
+	colorData.img = IMGBMP24;
+	colorData.nMatrixHeight = data.nMatrixHeight;
+	colorData.nMatrixWidth = data.nMatrixWidth;
+	colorData.pMatrixColorData = pLABSpace;
+	for (int i = 0; i < data.nMatrixWidth * data.nMatrixHeight; i++)
+	{
+		int addressSrc = (int)data.pMatrixColorData;
+		addressSrc = addressSrc + (sizeof(LABSpace) * i);
+		LABSpace * pSrc = (LABSpace *)addressSrc;
+		double l = 0.0;
+		double a = 0.0;
+		double b = 0.0;
+		l = pSrc->l;
+		a = pSrc->a;
+		b = pSrc->b;
+		int addressDes = (int)colorData.pMatrixColorData;
+		addressDes = addressDes + (sizeof(PixelData) * i);
+		PixelData * pDes = (PixelData *)addressDes;
+		double _r = 0.0;
+		double _g = 0.0;
+		double _b = 0.0;
+		Lab2RGB(l, a, b, _r, _g, _b);
+		pDes->b = _b;
+		pDes->g = _g;
+		pDes->r = _r;
+	}
+	m_id++;
+	imgOutId = m_id;
+	m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(imgOutId, colorData));
+	return LG_ERR_OTHER;
+}
+
+LGErrorStates LGBitMap::LGRGB2LAB2(LGBitMapId imgInId, LGBitMapId & imgOutId)
+{
+	LGBitMapId outId = imgInId;
+	if (m_mapColorData.at(imgInId).img == IMGBMP1 || m_mapColorData.at(imgInId).img == IMGBMP4 || m_mapColorData.at(imgInId).img == IMGBMP8)
+	{
+		Convert(imgInId, outId);
+	}
+	BITMAPCOLORDATA data;
+	memset(&data, 0, sizeof(BITMAPCOLORDATA));
+	LGGetColorData(outId, data);
+	assert(data.pMatrixColorData);
+	void * pLABSpace = malloc(sizeof(LABSpace) * data.nMatrixHeight * data.nMatrixWidth);
+	BITMAPCOLORDATA colorData; memset(&colorData, 0, sizeof(BITMAPCOLORDATA));
+	colorData.colorSpace = LAB;
+	colorData.img = OTHERDATA;
+	colorData.nMatrixHeight = data.nMatrixHeight;
+	colorData.nMatrixWidth = data.nMatrixWidth;
+	colorData.pMatrixColorData = pLABSpace;
+	for (int i = 0; i < data.nMatrixWidth * data.nMatrixHeight ; i++)
+	{
+		int addressSrc = (int)data.pMatrixColorData;
+		addressSrc = addressSrc + (sizeof(PixelData) * i);
+		PixelData * pSrc = (PixelData *)addressSrc;
+		double r = 0.0;
+		double g = 0.0;
+		double b = 0.0;
+		r = pSrc->r;
+		g = pSrc->g;
+		b = pSrc->b;
+		int addressDes = (int)colorData.pMatrixColorData;
+		addressDes = addressDes + (sizeof(LABSpace) * i);
+		LABSpace * pDes = (LABSpace *)addressDes;
+		RGB2Lab(r, g, b, pDes->l, pDes->a, pDes->b);
+	}
+	m_id++;
+	imgOutId = m_id;
+	m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(imgOutId, colorData));
+	return LG_ERR_OTHER;
+}
+
 LGErrorStates LGGeometryControl::LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum , double & X , double & Y)
 
 {
@@ -1176,7 +1348,7 @@ LGErrorStates LGGeometryControl::LGBesselCurve(LGPolygon & polygon, double & pro
 	GetPoint(point, nextPoint, dt, step, rPoint);
 	point.x = nextPoint.x;
 	point.y = nextPoint.y;
-	if (polygon.GetNextPoint(point, nextPoint) == false)
+	if (polygon.GetNextPoint(point, nextPoint) == false)														                                                                           
 	{
 		//说明这是最终的结果
 		result.x = rPoint.x;
@@ -2104,7 +2276,7 @@ LGErrorStates LGBitMap::LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut)
 
 	BITMAPCOLORDATA labData; memset(&labData, 0, sizeof(BITMAPCOLORDATA));
 	LGBitMapId labId = 0;
-	LGRGB2LAB(idGaussian, labId);
+	LGRGB2LAB2(idGaussian, labId);
 	LGGetColorData(labId, labData);
 	LGMathematicalOp::MATRIX matrixI;
 	void * pI = malloc(sizeof(double) * dataSrcConvert.nMatrixHeight * dataSrcConvert.nMatrixWidth);
@@ -2922,9 +3094,19 @@ LGErrorStates LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(vo
 }
 bool LGPolygon::AddPoint(LGPoint * point)
 {
+	
 	if (m_StartPoint == 0)
 	{
 		return false;
+	}
+	//测试发现当加入的两个点坐标完全一致的时候，会在找点的时候死循环
+	//这里判断新加入的点与存在的点是否一致
+	for (auto iter = memory.begin(); iter != memory.end(); iter++)
+	{
+		if (point->x == (*iter)->x && point->y == (*iter)->y)
+		{
+			return false;
+		}
 	}
 	//SetEndPoint(*point);
 	LGPoint * _point = GetNewPoint(point->x, point->y);

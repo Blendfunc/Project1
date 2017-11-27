@@ -17,10 +17,13 @@
 #include <algorithm>
 #include "math.h"
 #include <vector>
+#include <time.h>
 typedef HANDLE							LGObjId;
 
 typedef int								LGBitMapId;
 #define PI 3.141592653
+#define BLACK  20.0
+#define YELLOW  70.0
 enum LGObjType
 {
 	LGIMG				=				0,
@@ -330,8 +333,11 @@ public:
 	//
 
 	//颜色空间转换
+	void RGB2Lab(double R, double G, double B, double &L, double &a, double &b);//基本的转换函数，下面的转换要依靠它。。
+	void Lab2RGB(double L, double a, double b, double &R, double &G, double &B);//基本的转换函数，下面的转换要依靠它。。
 	LGErrorStates LGRGB2LAB(LGBitMapId imgInId, LGBitMapId & imgOutId);
 	LGErrorStates LGLAB2RGB(LGBitMapId imgInId, LGBitMapId & imgOutId);//20171126新增
+	LGErrorStates LGRGB2LAB2(LGBitMapId imgInId, LGBitMapId & imgOutId);//20171127新增，采用另外一种方法进行转换
 	//
 	LGErrorStates LGDicePaint(LGBitMapId imgInId, LGBitMapId & imgOutId);//骰子画http://blog.csdn.net/bluecol/article/details/47702147
 
@@ -417,6 +423,48 @@ public:
 	{
 		Clear();
 	}
+	//哈哈这里测试一下
+	void Test()
+	{
+		srand(time(NULL));
+		int i = 0;
+		int n = 45;
+		int m = 521;
+		int pos = n;
+		int dis = m - n + 1;
+		int rn = rand() % dis + pos;
+
+		int j = 0;
+		int k = 800;
+		int l = 890;
+		int _pos = k;
+		int _dis = l - k + 1;
+		int aaa = rand();
+		int bbb = aaa % _dis;
+		int _rn = bbb + _pos;
+		i = 0;
+		n = _rn;
+		m = 900;
+		pos = n;
+		dis = m - n + 1;
+		int ry = rand() % dis + pos;
+		while (i < 1)
+		{
+			int n = rn;
+			int m = ry;
+			int pos = n;
+			int dis = m - n + 1;
+			int x = rand() % dis + pos;
+			int y = rand() % dis + pos;
+			LGPoint point;
+			point.x = x;
+			point.y = y;
+			if (AddPoint(&point) == false)
+				i--;
+			i++;
+		}
+		
+	}
 public:
 	
 	bool AddPoint(LGPoint * point);//默认连接上一个添加过的点
@@ -454,7 +502,7 @@ public:
 	LGErrorStates LGHypotrochoid(double circle1, double circle2, double h, double & x, double & y, double stepSize, double & sum, double & X, double & Y);//圆内旋轮线，点在小圆的内部，小圆在大圆内部运行，h是小圆圆心到小圆内部点的距离
 	
 																																						  
-	//polygon为点集，proportion为比例
+	//polygon为点集，proportion为比例，只计算一个点
 	LGErrorStates LGBesselCurve(LGPolygon & polygon, double & proportion , LGPoint & result);//贝塞尔曲线
 
 
