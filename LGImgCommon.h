@@ -351,6 +351,9 @@ public:
 	LGErrorStates LGConvolutionalNeuralNetworkPaint();//学习生成另外一张风格的图片
 
 	//
+	//颜色量化20171128
+	LGErrorStates ColorQuantization1(LGBitMapId imgInId, LGBitMapId & imgOutId);//LAB颜色空间量化，输出为LAB色彩空间的数据
+	//
 public:
 	LGErrorStates FreeLGObjMem();
 

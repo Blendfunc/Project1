@@ -1373,6 +1373,11 @@ LGErrorStates LGGeometryControl::LGBesselCurve(LGPolygon & polygon, double & pro
 	LGBesselCurve(_polygon, proportion, result);
 }
 
+LGErrorStates LGBitMap::ColorQuantization1(LGBitMapId imgInId, LGBitMapId & imgOutId)
+{
+	return LGErrorStates();
+}
+
 std::string LGBitMap::GetFileName(LPCTSTR filePath)
 {
 	std::string strPath;
