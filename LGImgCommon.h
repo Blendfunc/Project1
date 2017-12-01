@@ -352,7 +352,7 @@ public:
 
 	//
 	//颜色量化20171128
-	LGErrorStates ColorQuantization1(LGBitMapId imgInId, LGBitMapId & imgOutId);//LAB颜色空间量化，输出为LAB色彩空间的数据
+	LGErrorStates ColorQuantization1(LGBitMapId imgInId, LGBitMapId & imgOutId , int quantizationLevel);//LAB颜色空间量化，输出为LAB色彩空间的数据，quantizationLevel为量化等级
 	//
 public:
 	LGErrorStates FreeLGObjMem();

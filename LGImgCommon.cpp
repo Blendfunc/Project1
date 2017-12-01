@@ -1373,9 +1373,45 @@ LGErrorStates LGGeometryControl::LGBesselCurve(LGPolygon & polygon, double & pro
 	LGBesselCurve(_polygon, proportion, result);
 }
 
-LGErrorStates LGBitMap::ColorQuantization1(LGBitMapId imgInId, LGBitMapId & imgOutId)
+LGErrorStates LGBitMap::ColorQuantization1(LGBitMapId imgInId, LGBitMapId & imgOutId , int quantizationLevel)
 {
-	return LGErrorStates();
+	/*%颜色量化
+		B = im2double(I4);
+	%选定量化等级
+		quant_levels = x;
+	dq = 100 / (quant_levels - 1);
+	qB = applycform(B, makecform('srgb2lab'));
+	%对L空间进行量化后四舍五入在放入[0, 100]的空间
+		qB(:, : , 1) = (1 / dq)*qB(:, : , 1);
+	qB(:, : , 1) = dq*round(qB(:, : , 1));
+	%量化公式
+		qB(:, : , 1) = qB(:, : , 1) + (dq / 2)*tanh((B(:, : , 1) - qB(:, : , 1)));
+	if exist('applycform', 'file')
+		Q = applycform(qB, makecform('lab2srgb'));
+	end*/
+	LGRGB2LAB2(imgInId, imgOutId);
+	BITMAPCOLORDATA colorData;
+	BITMAPCOLORDATA data;
+	LGGetColorData(imgOutId, data);
+	LGGetColorData(imgInId, colorData);
+	double dq = 100 / (quantizationLevel - 1);
+	//对L空间进行量化
+	for (int i = 0; i < data.nMatrixHeight * data.nMatrixWidth; i++)
+	{
+		int nSrcAddress = (int)data.pMatrixColorData;
+		nSrcAddress = nSrcAddress + sizeof(LABSpace) * i;
+		LABSpace * lab = (LABSpace *)nSrcAddress;
+		lab->l = lab->l * (1 / dq);
+		lab->l = dq * round(lab->l);
+		int nAddress = (int)colorData.pMatrixColorData;
+		nAddress = nAddress + sizeof(PixelData) * i;
+		PixelData * colorData = (PixelData *)nAddress;
+		lab->l = (((dq / 2) * tanh(colorData->b - lab->l))) + lab->l;
+		//
+		//qB(:, : , 1) = qB(:, : , 1) + (dq / 2)*tanh((B(:, : , 1) - qB(:, : , 1)));
+		//	
+	}
+	return LG_ERR_OTHER;
 }
 
 std::string LGBitMap::GetFileName(LPCTSTR filePath)
