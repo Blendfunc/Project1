@@ -327,9 +327,9 @@ public:
 	LGErrorStates Symmetry1();//y=x对称
 	//
 
-	//
+	//边缘检测
 	LGErrorStates LGSobelEdgeDetection();//sobel检测
-
+	LGErrorStates LGDogEdgeDetection();//Dog检测
 	//
 
 	//颜色空间转换
@@ -365,6 +365,8 @@ public:
 	void Convert(/*BITMAPCOLORDATA * pInData , BITMAPCOLORDATA ** pOutData*/LGBitMapId & imgInId , LGBitMapId & imgOutId);//将有调色板数据转换为无调色板数据（24位彩色数据）
 
 	LGErrorStates GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel , double variance);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差
+	LGErrorStates GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel, double variance , int nRange);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差 , nRange为模板半径
+
 	LGErrorStates TwoDimensionalGaussianFunction(/*in*/double * x, /*in*/double * y, /*out*/double * r , double * variance);//二维高斯函数，variance为方差
 	LGErrorStates TwoDimensionalGaussianFunction(/*in*/double * distance , /*out*/double * r, double * variance);//二维高斯函数，variance为方差
 

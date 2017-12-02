@@ -916,6 +916,15 @@ LGErrorStates LGBitMap::LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & 
 	}
 }
 
+LGErrorStates LGBitMap::LGDogEdgeDetection()
+{
+	CONVOLUTIONKERNEL kernel1;
+	CONVOLUTIONKERNEL kernel2;
+	GenerateGaussianFilter2(kernel1 , 2 , 15);
+	GenerateGaussianFilter2(kernel2, 1, 15);
+
+}
+
 void LGBitMap::RGB2Lab(double R, double G, double B, double & L, double & a, double & b)
 {
 	double X, Y, Z, fX, fY, fZ;
@@ -1551,6 +1560,19 @@ LGErrorStates LGBitMap::GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel, doub
 	{
 		return LG_ERR_PARAM;
 	}
+}
+
+LGErrorStates LGBitMap::GenerateGaussianFilter2(CONVOLUTIONKERNEL & kernel, double variance, int nRange)
+{
+	int nMatrixHeight = nRange;
+	int nMatrixWidth = nMatrixHeight;
+	void * pMatrix = malloc(nMatrixHeight * nMatrixWidth * sizeof(double));
+	memset(&kernel, 0, sizeof(CONVOLUTIONKERNEL));
+	kernel.nHeight = nMatrixHeight;
+	kernel.nWidth = nMatrixWidth;
+	kernel.pData = pMatrix;
+	kernel.type = DOUBLENUMBER;
+	GenerateGaussianFilter(&kernel, variance);
 }
 
 LGErrorStates LGBitMap::TwoDimensionalGaussianFunction(double * x, double * y, double * r, double * variance)
