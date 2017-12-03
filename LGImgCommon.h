@@ -211,8 +211,10 @@ namespace LGMathematicalOp
 		//p是初始化矩阵的数据地址，DataSize是这个数据占用的内存大小（几个字节）
 		//内存地址由外部分配，应该保证大小不会在赋值过程中溢出
 		//是InitializationMATRIX(caltype value, _m_in_ _m_out_ MATRIX & matrix)的增强版
+		//也是初始化矩阵中每个元素的值为给定的值
 		//3
 		static LGErrorStates InitializationMATRIX(void * p , int DataSize , _m_in_ _m_out_ MATRIX & matrix);//初始化
+		static LGErrorStates InitializationMATRIXWithData(void * p, int DataSize, _m_in_ _m_out_ MATRIX & matrix);//初始化
 		//
 		
 		
@@ -222,7 +224,7 @@ namespace LGMathematicalOp
 
 		static LGErrorStates MatrixAddition(_m_out_ MATRIX & matrix , _m_in_ MATRIX & matrix1 , _m_in_ MATRIX & matrix2);//矩阵加法
 
-		static LGErrorStates Convolution(_m_out_ MATRIX & matrix3, _m_in_ MATRIX & matrix1, _m_in_ MATRIX & kernel);//卷积
+		static LGErrorStates Convolution(_m_out_ MATRIX & matrix3, _m_in_ MATRIX & matrix1, _m_in_ MATRIX & kernel);//卷积，矩阵中的元素是double类型的，也就是一维的
 
 		static LGErrorStates AbsoluteValue(_m_out_ MATRIX & matrix, _m_in_ MATRIX & _matrix);//对_matrix中各个元素求绝对值
 
@@ -329,7 +331,7 @@ public:
 
 	//边缘检测
 	LGErrorStates LGSobelEdgeDetection();//sobel检测
-	LGErrorStates LGDogEdgeDetection();//Dog检测
+	LGErrorStates LGDogEdgeDetection(LGBitMapId imgInId, LGBitMapId & imgOutId);//Dog检测
 	//
 
 	//颜色空间转换
@@ -365,7 +367,7 @@ public:
 	void Convert(/*BITMAPCOLORDATA * pInData , BITMAPCOLORDATA ** pOutData*/LGBitMapId & imgInId , LGBitMapId & imgOutId);//将有调色板数据转换为无调色板数据（24位彩色数据）
 
 	LGErrorStates GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel , double variance);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差
-	LGErrorStates GenerateGaussianFilter(CONVOLUTIONKERNEL * pKernel, double variance , int nRange);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差 , nRange为模板半径
+	LGErrorStates GenerateGaussianFilter2(CONVOLUTIONKERNEL & kernel, double variance , int nRange);//产生一个高斯滤波器，矩阵地址由外部分配，variance为方差 , nRange为模板直径
 
 	LGErrorStates TwoDimensionalGaussianFunction(/*in*/double * x, /*in*/double * y, /*out*/double * r , double * variance);//二维高斯函数，variance为方差
 	LGErrorStates TwoDimensionalGaussianFunction(/*in*/double * distance , /*out*/double * r, double * variance);//二维高斯函数，variance为方差

@@ -916,13 +916,80 @@ LGErrorStates LGBitMap::LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & 
 	}
 }
 
-LGErrorStates LGBitMap::LGDogEdgeDetection()
+LGErrorStates LGBitMap::LGDogEdgeDetection(LGBitMapId imgInId, LGBitMapId & imgOutId)
 {
+	/*f1=applycform(f1,makecform('srgb2lab'));
+两个高斯滤波相减求出Dog算子
+DoG=fspecial('gaussian',15,2)-fspecial('gaussian',15,1);
+使用Dog算子卷积得到边缘
+Edge=imfilter(f1(:,:,1) ,DoG,'conv','circular');*/
+//////////////////////////////////////////////////////////////////////////////求DOG算子
 	CONVOLUTIONKERNEL kernel1;
 	CONVOLUTIONKERNEL kernel2;
 	GenerateGaussianFilter2(kernel1 , 2 , 15);
 	GenerateGaussianFilter2(kernel2, 1, 15);
+	LGMathematicalOp::MATRIX matrix1;
+	LGMathematicalOp::MATRIX matrix2;
+	LGMathematicalOp::MATRIX _matrix2;
+	LGMathematicalOp::MATRIX sum;
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(matrix1, kernel1.nHeight, kernel1.nWidth, sizeof(double));
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIXWithData(kernel1.pData, sizeof(double), matrix1);
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(matrix2, kernel2.nHeight, kernel2.nWidth, sizeof(double));
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIXWithData(kernel2.pData, sizeof(double), matrix2);
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(_matrix2, kernel2.nHeight, kernel2.nWidth, sizeof(double));
 
+	LGMathematicalOp::LGMathematicalOperation::Multiplication(_matrix2, matrix2, -1);
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(sum, kernel2.nHeight, kernel2.nWidth, sizeof(double));
+
+	LGMathematicalOp::LGMathematicalOperation::MatrixAdditionEx(sum, matrix1, _matrix2);
+//////////////////////////////////////////////////////////////////////////////
+
+	LGMathematicalOp::MATRIX matrixLSpace;
+	LGBitMapId idLabSpace;
+	LGRGB2LAB2(imgInId, idLabSpace);
+	BITMAPCOLORDATA lab;
+	LGGetColorData(idLabSpace, lab);
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(matrixLSpace, lab.nMatrixHeight, lab.nMatrixWidth, sizeof(double));
+	//取LAB空间L分量到matrixLSpace
+	for (int i = 0; i < lab.nMatrixHeight * lab.nMatrixWidth; i++)
+	{
+		int addressLAB = (int)lab.pMatrixColorData;
+		addressLAB = addressLAB + (i * sizeof(LABSpace));
+		LABSpace * pLAB = (LABSpace *)addressLAB;
+		int addressDes = (int)matrixLSpace.data;
+		addressDes = addressDes + (i * sizeof(double));
+		double * pDes = (double *)addressDes;
+		*pDes = pLAB->l;
+	}
+	//
+	LGMathematicalOp::MATRIX result;
+	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(result, lab.nMatrixHeight, lab.nMatrixWidth, sizeof(double));
+
+	LGMathematicalOp::LGMathematicalOperation::Convolution(result, matrixLSpace, sum);
+	//生成位图数据
+	BITMAPCOLORDATA data;
+	data.colorSpace = RGB;
+	data.img = IMGBMP24;
+	data.nMatrixHeight = result.height;
+	data.nMatrixWidth = result.width;
+	data.pMatrixColorData = malloc(sizeof(PixelData) * data.nMatrixHeight * data.nMatrixWidth);
+	for (int i = 0; i < result.height * result.width; i++)
+	{
+		int addressDes = (int)data.pMatrixColorData;
+		addressDes = addressDes + (sizeof(PixelData) * i);
+		PixelData * pDes = (PixelData *)addressDes;
+
+		int addressSrc = (int)result.data;
+		addressSrc = addressSrc + (sizeof(double) * i);
+		double * pSrc = (double *)addressSrc;
+		pDes->b = *pSrc;
+		pDes->g = *pSrc;
+		pDes->r = *pSrc;
+	}
+	m_id++;
+	imgOutId = m_id;
+	m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(m_id, data));
+	return LG_ERR_OTHER;
 }
 
 void LGBitMap::RGB2Lab(double R, double G, double B, double & L, double & a, double & b)
@@ -1573,6 +1640,7 @@ LGErrorStates LGBitMap::GenerateGaussianFilter2(CONVOLUTIONKERNEL & kernel, doub
 	kernel.pData = pMatrix;
 	kernel.type = DOUBLENUMBER;
 	GenerateGaussianFilter(&kernel, variance);
+	return LG_ERR_OTHER;
 }
 
 LGErrorStates LGBitMap::TwoDimensionalGaussianFunction(double * x, double * y, double * r, double * variance)
@@ -2821,9 +2889,9 @@ LGErrorStates LGMathematicalOp::LGMathematicalOperation::Convolution(_m_out_ MAT
 	{
 		for (int j = 0; j < nWidth / 2; j++)
 		{
-			int xDes = j + (nMatrixHeight - (nWidth / 2));
+			int xDes = j + (nMatrixWidth - (nWidth / 2));
 			int yDes = i;
-			int xPoint = nMatrixHeight - (nWidth / 2) - 1;
+			int xPoint = nMatrixWidth - (nWidth / 2) - 1;
 			int yPoint = nHeight / 2;
 			int xSrc = (2 * xPoint) - xDes;
 			int ySrc = (2 * yPoint) - yDes;
@@ -3138,6 +3206,7 @@ LGErrorStates LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(_m
 	matrix.height = height;
 	matrix.width = width;
 	matrix.data = malloc(DataSize * height * width);
+	memset(matrix.data, 0, DataSize * height * width);
 	assert(matrix.data);
 	matrix.dimension = DataSize / sizeof(caltype);
 	return LG_ERR_OTHER;
@@ -3155,6 +3224,22 @@ LGErrorStates LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(vo
 	}
 	return LG_ERR_OTHER;
 }
+LGErrorStates LGMathematicalOp::LGMathematicalOperation::InitializationMATRIXWithData(void * p, int DataSize, _m_in_ _m_out_ MATRIX & matrix)
+{
+	///这里的算法速度可能会慢
+	for (int i = 0; i < matrix.height * matrix.width; i++)
+	{
+		int address = (int)matrix.data;
+		address = address + (DataSize * i);
+		void * pDes = (void *)address;
+		int addressSrc = (int)p;
+		addressSrc = addressSrc + (DataSize * i);
+		void * pSrc = (void *)addressSrc;
+		memcpy(pDes, pSrc, DataSize);
+	}
+	return LG_ERR_OTHER;
+}
+
 bool LGPolygon::AddPoint(LGPoint * point)
 {
 	
