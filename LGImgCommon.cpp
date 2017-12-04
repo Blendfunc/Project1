@@ -916,7 +916,7 @@ LGErrorStates LGBitMap::LGConvolutionOperation(LGBitMapId imgInId, LGBitMapId & 
 	}
 }
 
-LGErrorStates LGBitMap::LGDogEdgeDetection(LGBitMapId imgInId, LGBitMapId & imgOutId)
+LGErrorStates LGBitMap::LGDogEdgeDetection(LGBitMapId imgInId, LGBitMapId & imgOutId , COLORSPACE space)
 {
 	/*f1=applycform(f1,makecform('srgb2lab'));
 两个高斯滤波相减求出Dog算子
@@ -962,33 +962,62 @@ Edge=imfilter(f1(:,:,1) ,DoG,'conv','circular');*/
 		*pDes = pLAB->l;
 	}
 	//
+	
 	LGMathematicalOp::MATRIX result;
 	LGMathematicalOp::LGMathematicalOperation::InitializationMATRIX(result, lab.nMatrixHeight, lab.nMatrixWidth, sizeof(double));
 
 	LGMathematicalOp::LGMathematicalOperation::Convolution(result, matrixLSpace, sum);
-	//生成位图数据
 	BITMAPCOLORDATA data;
-	data.colorSpace = RGB;
-	data.img = IMGBMP24;
-	data.nMatrixHeight = result.height;
-	data.nMatrixWidth = result.width;
-	data.pMatrixColorData = malloc(sizeof(PixelData) * data.nMatrixHeight * data.nMatrixWidth);
-	for (int i = 0; i < result.height * result.width; i++)
+	if (space == LAB)
 	{
-		int addressDes = (int)data.pMatrixColorData;
-		addressDes = addressDes + (sizeof(PixelData) * i);
-		PixelData * pDes = (PixelData *)addressDes;
+		data.colorSpace = LAB;
+		data.img = OTHERDATA;
+		data.nMatrixHeight = result.height;
+		data.nMatrixWidth = result.width;
+		data.pMatrixColorData = malloc(sizeof(LABSpace) * data.nMatrixHeight * data.nMatrixWidth);
+		for (int i = 0; i < result.height * result.width; i++)
+		{
+			int addressDes = (int)data.pMatrixColorData;
+			addressDes = addressDes + (sizeof(PixelData) * i);
+			LABSpace * pDes = (LABSpace *)addressDes;
 
-		int addressSrc = (int)result.data;
-		addressSrc = addressSrc + (sizeof(double) * i);
-		double * pSrc = (double *)addressSrc;
-		pDes->b = *pSrc;
-		pDes->g = *pSrc;
-		pDes->r = *pSrc;
+			int addressSrc = (int)result.data;
+			addressSrc = addressSrc + (sizeof(double) * i);
+			double * pSrc = (double *)addressSrc;
+			pDes->l = *pSrc;
+			pDes->a = 0;
+			pDes->b = 0;
+		}
+		m_id++;
+		imgOutId = m_id;
+		m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(m_id, data));
 	}
-	m_id++;
-	imgOutId = m_id;
-	m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(m_id, data));
+	else if (space == RGB)
+	{
+		//生成位图数据
+		data.colorSpace = RGB;
+		data.img = IMGBMP24;
+		data.nMatrixHeight = result.height;
+		data.nMatrixWidth = result.width;
+		data.pMatrixColorData = malloc(sizeof(PixelData) * data.nMatrixHeight * data.nMatrixWidth);
+		for (int i = 0; i < result.height * result.width; i++)
+		{
+			int addressDes = (int)data.pMatrixColorData;
+			addressDes = addressDes + (sizeof(PixelData) * i);
+			PixelData * pDes = (PixelData *)addressDes;
+
+			int addressSrc = (int)result.data;
+			addressSrc = addressSrc + (sizeof(double) * i);
+			double * pSrc = (double *)addressSrc;
+			pDes->b = *pSrc;
+			pDes->g = *pSrc;
+			pDes->r = *pSrc;
+		}
+		m_id++;
+		imgOutId = m_id;
+		m_mapColorData.insert(std::pair<LGBitMapId, BITMAPCOLORDATA>(m_id, data));
+	}
+	
 	return LG_ERR_OTHER;
 }
 
@@ -2778,6 +2807,69 @@ LGErrorStates LGBitMap::LGBilateralFiltering(LGBitMapId imgInId, LGBitMapId & im
 		}
 
 	}
+}
+
+LGErrorStates LGBitMap::LGComicEffect(LGBitMapId imgInId, LGBitMapId & imgIdOut)
+{
+	//输入图像 双边滤波噪点处理 颜色量化色彩处理 双边过滤边缘检测增强边缘 输出图像
+	LGBitMapId srcImg;
+	srcImg = imgInId;
+	LGBitMapId bilateralFilteringImg;
+	LGBitMapId colorQuantizationImg;
+	LGBitMapId dogEdgeDetectionImg;
+	BITMAPCOLORDATA bilateralFilteringImgdata;
+	BITMAPCOLORDATA colorQuantizationImgdata;
+	BITMAPCOLORDATA dogEdgeDetectionImgdata;
+	BITMAPCOLORDATA srcImgLABdata;
+	LGBitMapId srcLABImg;
+	//LGLoadBitMap(A2T((LPSTR)m_path.data()), id);
+	///////////////////////////////////////////////////////////////////////////////////
+	LGBilateralFiltering(srcImg, bilateralFilteringImg, 1, 240);
+	/*LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);
+	LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);
+	LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);
+	LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);
+	LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);
+	LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);
+	LGBilateralFiltering(bilateralFilteringImg, bilateralFilteringImg, 1, 240);*/
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+	ColorQuantization1(bilateralFilteringImg, colorQuantizationImg, 8.6);
+	LGGetColorData(colorQuantizationImg, colorQuantizationImgdata);
+	//m_LgBitmap.LGLAB2RGB(outid, outid);
+	//m_LgBitmap.LGGetColorData(outid, data);
+	//m_RenderWnd->RefreshRenderWnd(&data);
+	LGDogEdgeDetection(bilateralFilteringImg, dogEdgeDetectionImg , RGB);
+	LGGetColorData(dogEdgeDetectionImg, dogEdgeDetectionImgdata);
+	///////////////////////
+	LGRGB2LAB2(dogEdgeDetectionImg, dogEdgeDetectionImg);
+	LGGetColorData(dogEdgeDetectionImg, dogEdgeDetectionImgdata);
+	///////////////////////
+	LGRGB2LAB2(imgInId, srcLABImg);
+	LGGetColorData(srcLABImg, srcImgLABdata);
+	for (int i = 0; i < colorQuantizationImgdata.nMatrixHeight * colorQuantizationImgdata.nMatrixWidth; i++)
+	{
+		int address1 = (int)colorQuantizationImgdata.pMatrixColorData;
+		int address2 = (int)dogEdgeDetectionImgdata.pMatrixColorData;
+		int address3 = (int)srcImgLABdata.pMatrixColorData;
+
+		address1 = address1 + (sizeof(LABSpace) * i);
+		address2 = address2 + (sizeof(LABSpace) * i);
+		address3 = address3 + (sizeof(LABSpace) * i);
+
+		LABSpace * space1 = (LABSpace *)address1;
+		LABSpace * space2 = (LABSpace *)address2;
+		LABSpace * space3 = (LABSpace *)address3;
+		space1->l = space1->l - space2->l + 15;
+		
+		if (space1->l > 100)
+		{
+			//assert(0);
+		}
+	}
+	LGLAB2RGB(colorQuantizationImg, imgIdOut);
+	return LG_ERR_OTHER;
 }
 
 LGErrorStates LGMathematicalOp::LGMathematicalOperation::HadamardMultiplication(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3)

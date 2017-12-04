@@ -317,6 +317,8 @@ public:
 	LGErrorStates LGSketch1(LGBitMapId imgInId , LGBitMapId & imgIdOut);//素描效果
 	LGErrorStates LGSketch2(LGBitMapId imgInId, LGBitMapId & imgIdOut);//素描效果http://blog.csdn.net/matrix_space/article/details/38709605
 	LGErrorStates LGBilateralFiltering(LGBitMapId imgInId, LGBitMapId & imgIdOut , double nRange , double nRange2);//双边滤波，nRange2为值标准差，nRange为距离标准差
+	LGErrorStates LGComicEffect(LGBitMapId imgInId, LGBitMapId & imgIdOut);//漫画效果
+
 	//
 
 
@@ -331,7 +333,7 @@ public:
 
 	//边缘检测
 	LGErrorStates LGSobelEdgeDetection();//sobel检测
-	LGErrorStates LGDogEdgeDetection(LGBitMapId imgInId, LGBitMapId & imgOutId);//Dog检测
+	LGErrorStates LGDogEdgeDetection(LGBitMapId imgInId, LGBitMapId & imgOutId , COLORSPACE space);//Dog检测，用space参数来决定输出是LAB还是RGB
 	//
 
 	//颜色空间转换
