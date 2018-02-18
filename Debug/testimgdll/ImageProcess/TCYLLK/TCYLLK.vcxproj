@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -20,13 +20,13 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{E9BDC0A2-2CDF-4BAA-B5A2-11989D0363FA}</ProjectGuid>
-    <RootNamespace>ImageProcess</RootNamespace>
+    <ProjectGuid>{3CCC270D-CA3C-457A-85FE-EFA61A2A0506}</ProjectGuid>
+    <RootNamespace>TCYLLK</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>G:\Project1.git\trunk\Debug\testimgdll\ImageProcess\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\imageprocess\Project1.git\trunk\Debug\testimgdll\ImageProcess\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LibraryPath>D:\imageprocess\Project1.git\trunk\Debug\testimgdll\ImageProcess\Release;$(LibraryPath)</LibraryPath>
@@ -116,10 +116,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ImageProcess.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ImageProcess.h" />
+    <ClCompile Include="TCYLLK.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
