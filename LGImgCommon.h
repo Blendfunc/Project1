@@ -244,6 +244,12 @@ namespace LGMathematicalOp
 		//定义复杂元素的运算
 		static LGErrorStates HadamardMultiplicationEx(_m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2, _m_out_ MATRIX & matrix3);
 		static LGErrorStates MatrixAdditionEx(_m_out_ MATRIX & matrix, _m_in_ MATRIX & matrix1, _m_in_ MATRIX & matrix2);
+
+
+		//
+		static LGErrorStates CalculationVariance(_m_in_ MATRIX * _matrix , _m_out_ caltype & r)//_matrix为行向量
+
+
 	};
 }
 class LD_EXT_CLASS LGBitMap 
