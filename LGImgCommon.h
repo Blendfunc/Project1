@@ -247,7 +247,7 @@ namespace LGMathematicalOp
 
 
 		//
-		static LGErrorStates CalculationVariance(_m_in_ MATRIX * _matrix , _m_out_ caltype & r)//_matrix为行向量
+		static LGErrorStates CalculationVariance(_m_in_ MATRIX * _matrix, _m_out_ caltype & r);//_matrix为行向量
 
 
 	};
